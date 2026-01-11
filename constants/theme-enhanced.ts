@@ -77,7 +77,6 @@ export interface ThemeTypography {
 
   // Font weights
   light: string;
-  normal: string;
   medium: string;
   semibold: string;
   bold: string;
@@ -85,7 +84,6 @@ export interface ThemeTypography {
   // Line heights
   tight: number;
   snug: number;
-  normal: number;
   relaxed: number;
   loose: number;
 }
@@ -276,14 +274,12 @@ const typography: ThemeTypography = {
   "4xl": 36,
 
   light: "300",
-  normal: "400",
   medium: "500",
   semibold: "600",
   bold: "700",
 
   tight: 1.2,
   snug: 1.3,
-  normal: 1.5,
   relaxed: 1.6,
   loose: 1.8,
 };

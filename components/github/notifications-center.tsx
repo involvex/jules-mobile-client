@@ -1152,9 +1152,6 @@ const styles = StyleSheet.create({
   primarySettingsButton: {
     backgroundColor: "#2563eb",
   },
-  primarySettingsButton: {
-    backgroundColor: "#2563eb",
-  },
   primarySettingsButtonText: {
     color: "#fff",
     fontSize: 16,

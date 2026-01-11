@@ -16,6 +16,9 @@ export interface Repository {
   language?: string;
   stargazers_count: number;
   forks_count: number;
+  topics?: string[];
+  languages?: Record<string, number>;
+  updated_at?: string;
 }
 
 export interface Workflow {
@@ -64,6 +67,23 @@ export interface Job {
   started_at: string;
   completed_at: string;
   steps: JobStep[];
+}
+
+export interface WorkflowUpdate {
+  id: number;
+  workflow_id: number;
+  run_id: number;
+  status: "queued" | "in_progress" | "completed";
+  conclusion:
+    | "success"
+    | "failure"
+    | "cancelled"
+    | "skipped"
+    | "timed_out"
+    | "action_required"
+    | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface JobStep {
@@ -167,9 +187,18 @@ export function useGithubApi() {
     }
   }, [octokit]);
 
-  // Get user repositories
+  // Get user repositories with pagination and filtering
   const getUserRepos = useCallback(
-    async (perPage = 30, page = 1): Promise<Repository[]> => {
+    async (
+      perPage = 30,
+      page = 1,
+      filters: {
+        type?: "all" | "owner" | "member";
+        sort?: "created" | "updated" | "pushed" | "full_name";
+        direction?: "asc" | "desc";
+        language?: string;
+      } = {},
+    ): Promise<Repository[]> => {
       if (!octokit) throw new Error("GitHub API not initialized");
 
       try {
@@ -177,10 +206,20 @@ export function useGithubApi() {
         const { data } = await octokit.rest.repos.listForAuthenticatedUser({
           per_page: perPage,
           page,
-          sort: "updated",
-          direction: "desc",
+          type: filters.type || "owner",
+          sort: filters.sort || "updated",
+          direction: filters.direction || "desc",
         });
-        return data as Repository[];
+
+        // Filter by language if specified
+        let filteredData = data as Repository[];
+        if (filters.language) {
+          filteredData = filteredData.filter(
+            repo => repo.language === filters.language,
+          );
+        }
+
+        return filteredData;
       } catch (error) {
         console.error("Failed to fetch repositories:", error);
         throw error;
@@ -191,7 +230,7 @@ export function useGithubApi() {
     [octokit],
   );
 
-  // Get repository details
+  // Get repository details with extended information
   const getRepoDetails = useCallback(
     async (owner: string, repo: string): Promise<Repository> => {
       if (!octokit) throw new Error("GitHub API not initialized");
@@ -205,6 +244,96 @@ export function useGithubApi() {
         return data as Repository;
       } catch (error) {
         console.error("Failed to fetch repository details:", error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [octokit],
+  );
+
+  // Get repository topics
+  const getRepoTopics = useCallback(
+    async (owner: string, repo: string): Promise<string[]> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+
+      try {
+        setIsLoading(true);
+        const { data } = await octokit.rest.repos.getAllTopics({
+          owner,
+          repo,
+        });
+        return data.names;
+      } catch (error) {
+        console.error("Failed to fetch repository topics:", error);
+        return [];
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [octokit],
+  );
+
+  // Get repository languages
+  const getRepoLanguages = useCallback(
+    async (owner: string, repo: string): Promise<Record<string, number>> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+
+      try {
+        setIsLoading(true);
+        const { data } = await octokit.rest.repos.listLanguages({
+          owner,
+          repo,
+        });
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch repository languages:", error);
+        return {};
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [octokit],
+  );
+
+  // Search repositories with advanced filtering
+  const searchRepositories = useCallback(
+    async (
+      query: string,
+      filters: {
+        language?: string;
+        topic?: string;
+        sort?: "stars" | "forks" | "updated";
+        order?: "asc" | "desc";
+      } = {},
+      perPage = 30,
+      page = 1,
+    ): Promise<SearchResults> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+
+      try {
+        setIsLoading(true);
+        // Build search query
+        let searchQuery = query;
+
+        // Add filters to query
+        if (filters.language) {
+          searchQuery += ` language:${filters.language}`;
+        }
+        if (filters.topic) {
+          searchQuery += ` topic:${filters.topic}`;
+        }
+
+        const { data } = await octokit.rest.search.repos({
+          q: searchQuery,
+          per_page: perPage,
+          page,
+          sort: filters.sort || "updated",
+          order: filters.order || "desc",
+        });
+        return data as SearchResults;
+      } catch (error) {
+        console.error("Failed to search repositories:", error);
         throw error;
       } finally {
         setIsLoading(false);
@@ -383,31 +512,6 @@ export function useGithubApi() {
     [octokit],
   );
 
-  // Search repositories
-  const searchRepositories = useCallback(
-    async (query: string, perPage = 30, page = 1): Promise<SearchResults> => {
-      if (!octokit) throw new Error("GitHub API not initialized");
-
-      try {
-        setIsLoading(true);
-        const { data } = await octokit.rest.search.repos({
-          q: query,
-          per_page: perPage,
-          page,
-          sort: "stars",
-          order: "desc",
-        });
-        return data as SearchResults;
-      } catch (error) {
-        console.error("Failed to search repositories:", error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [octokit],
-  );
-
   // Get repository by full name
   const getRepositoryByFullName = useCallback(
     async (fullName: string): Promise<Repository | null> => {
@@ -467,10 +571,14 @@ export function useGithubApi() {
     validateToken,
     getUserRepos,
     getRepoDetails,
+    getRepoTopics,
+    getRepoLanguages,
     getWorkflows,
     getWorkflowRuns,
     getWorkflowRunLogs,
     getPullRequests,
+    getWorkflowJobs,
+    getWorkflowRunDetails,
     searchRepositories,
     getRepositoryByFullName,
     parseGithubUrl,

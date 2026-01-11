@@ -3,7 +3,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import React, { useCallback, useEffect } from "react";
 import { Stack } from "expo-router";
 
-import { RepositorySyncManager } from "@/components/github/repository-sync-manager";
+import { EnhancedRepositoryManager } from "@/components/github/enhanced-repository-manager";
 import { Repository, useGithubApi } from "@/hooks/use-github-api";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -13,7 +13,7 @@ export default function Repos() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { t } = useI18n();
-  const { isAuthenticated, isLoading, validateToken } = useGithubApi();
+  const { isAuthenticated, validateToken } = useGithubApi();
 
   const handleRepoPress = useCallback(
     (repo: Repository) => {
@@ -106,8 +106,8 @@ export default function Repos() {
           </View>
         </View>
 
-        {/* Repository Sync Manager */}
-        <RepositorySyncManager onRepositorySelect={handleRepoPress} />
+        {/* Enhanced Repository Manager */}
+        <EnhancedRepositoryManager onRepositorySelect={handleRepoPress} />
       </SafeAreaView>
     </>
   );
