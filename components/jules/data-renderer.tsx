@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
 
 interface DataRendererProps {
   data: unknown;
@@ -13,9 +13,9 @@ interface DataRendererProps {
  */
 const formatKey = (key: string): string => {
   return key
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/_/g, ' ')
-    .replace(/^\w/, (c) => c.toUpperCase())
+    .replace(/([A-Z])/g, " $1")
+    .replace(/_/g, " ")
+    .replace(/^\w/, c => c.toUpperCase())
     .trim();
 };
 
@@ -25,16 +25,25 @@ const formatKey = (key: string): string => {
  */
 export function DataRenderer({ data, depth = 0 }: DataRendererProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   if (data === null || data === undefined) {
-    return <Text style={[styles.nullText, isDark && styles.nullTextDark]}>null</Text>;
+    return (
+      <Text style={[styles.nullText, isDark && styles.nullTextDark]}>null</Text>
+    );
   }
 
   // プリミティブな値
-  if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
+  if (
+    typeof data === "string" ||
+    typeof data === "number" ||
+    typeof data === "boolean"
+  ) {
     return (
-      <Text style={[styles.valueText, isDark && styles.valueTextDark]} selectable>
+      <Text
+        style={[styles.valueText, isDark && styles.valueTextDark]}
+        selectable
+      >
         {String(data)}
       </Text>
     );
@@ -43,14 +52,23 @@ export function DataRenderer({ data, depth = 0 }: DataRendererProps) {
   // 配列の場合
   if (Array.isArray(data)) {
     if (data.length === 0) {
-      return <Text style={[styles.nullText, isDark && styles.nullTextDark]}>Empty List</Text>;
+      return (
+        <Text style={[styles.nullText, isDark && styles.nullTextDark]}>
+          Empty List
+        </Text>
+      );
     }
 
     return (
       <View style={styles.arrayContainer}>
         {data.map((item, idx) => (
-          <View key={idx} style={[styles.arrayItem, isDark && styles.arrayItemDark]}>
-            <Text style={[styles.indexText, isDark && styles.indexTextDark]}>#{idx + 1}</Text>
+          <View
+            key={idx}
+            style={[styles.arrayItem, isDark && styles.arrayItemDark]}
+          >
+            <Text style={[styles.indexText, isDark && styles.indexTextDark]}>
+              #{idx + 1}
+            </Text>
             <View style={styles.itemContent}>
               <DataRenderer data={item} depth={depth + 1} />
             </View>
@@ -61,19 +79,28 @@ export function DataRenderer({ data, depth = 0 }: DataRendererProps) {
   }
 
   // オブジェクトの場合
-  if (typeof data === 'object') {
+  if (typeof data === "object") {
     const keys = Object.keys(data as Record<string, unknown>);
     if (keys.length === 0) {
-      return <Text style={[styles.nullText, isDark && styles.nullTextDark]}>Empty Object</Text>;
+      return (
+        <Text style={[styles.nullText, isDark && styles.nullTextDark]}>
+          Empty Object
+        </Text>
+      );
     }
 
     return (
       <View style={[styles.objectContainer, depth > 0 && styles.nestedObject]}>
-        {keys.map((key) => (
+        {keys.map(key => (
           <View key={key} style={styles.objectField}>
-            <Text style={[styles.keyText, isDark && styles.keyTextDark]}>{formatKey(key)}</Text>
+            <Text style={[styles.keyText, isDark && styles.keyTextDark]}>
+              {formatKey(key)}
+            </Text>
             <View style={styles.fieldValue}>
-              <DataRenderer data={(data as Record<string, unknown>)[key]} depth={depth + 1} />
+              <DataRenderer
+                data={(data as Record<string, unknown>)[key]}
+                depth={depth + 1}
+              />
             </View>
           </View>
         ))}
@@ -87,40 +114,40 @@ export function DataRenderer({ data, depth = 0 }: DataRendererProps) {
 
 const styles = StyleSheet.create({
   nullText: {
-    color: '#94a3b8',
-    fontStyle: 'italic',
+    color: "#94a3b8",
+    fontStyle: "italic",
   },
   nullTextDark: {
-    color: '#64748b',
+    color: "#64748b",
   },
   valueText: {
-    color: '#334155',
+    color: "#334155",
     flexShrink: 1,
   },
   valueTextDark: {
-    color: '#cbd5e1',
+    color: "#cbd5e1",
   },
   arrayContainer: {
     gap: 8,
   },
   arrayItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: "rgba(0,0,0,0.05)",
     padding: 8,
     borderRadius: 6,
   },
   arrayItemDark: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: "rgba(255,255,255,0.05)",
   },
   indexText: {
     fontSize: 10,
-    color: '#94a3b8',
-    fontFamily: 'monospace',
+    color: "#94a3b8",
+    fontFamily: "monospace",
     minWidth: 20,
   },
   indexTextDark: {
-    color: '#64748b',
+    color: "#64748b",
   },
   itemContent: {
     flex: 1,
@@ -130,7 +157,7 @@ const styles = StyleSheet.create({
   },
   nestedObject: {
     borderLeftWidth: 2,
-    borderLeftColor: '#e2e8f0',
+    borderLeftColor: "#e2e8f0",
     paddingLeft: 8,
     marginLeft: 4,
   },
@@ -139,12 +166,12 @@ const styles = StyleSheet.create({
   },
   keyText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#64748b',
+    fontWeight: "600",
+    color: "#64748b",
     marginBottom: 2,
   },
   keyTextDark: {
-    color: '#94a3b8',
+    color: "#94a3b8",
   },
   fieldValue: {
     paddingLeft: 2,

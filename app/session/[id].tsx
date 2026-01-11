@@ -1,52 +1,55 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  View,
+  Animated,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Keyboard,
-  Platform,
-  Animated,
-} from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
-import { useHeaderHeight } from '@react-navigation/elements';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ActivityItem, ActivityItemSkeleton } from '@/components/jules';
-import { useJulesApi } from '@/hooks/use-jules-api';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import type { Activity } from '@/constants/types';
-import { useI18n } from '@/constants/i18n-context';
-import { useApiKey } from '@/constants/api-key-context';
+  View,
+} from "react-native";
+import { ActivityItem, ActivityItemSkeleton } from "@/components/jules";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useApiKey } from "@/constants/api-key-context";
+import { useJulesApi } from "@/hooks/use-jules-api";
+import { useI18n } from "@/constants/i18n-context";
+import type { Activity } from "@/constants/types";
 
 export default function SessionDetailScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const { t } = useI18n();
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
 
   const { apiKey } = useApiKey();
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [messageInput, setMessageInput] = useState('');
+  const [messageInput, setMessageInput] = useState("");
   const keyboardPadding = useRef(new Animated.Value(0)).current;
 
   const flatListRef = useRef<FlatList>(null);
-  const { isLoading, error, clearError, fetchActivities, approvePlan } = useJulesApi({ apiKey, t });
+  const { isLoading, error, clearError, fetchActivities, approvePlan } =
+    useJulesApi({ apiKey, t });
 
   // キーボード表示時のアニメーション付きパディング調整
   useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    
-    const showSub = Keyboard.addListener(showEvent, (event) => {
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, event => {
       const keyboardHeight = event.endCoordinates.height;
       // iOSではKeyboardAvoidingViewが処理、Androidでは手動でパディング
-      if (Platform.OS === 'android') {
+      if (Platform.OS === "android") {
         Animated.timing(keyboardPadding, {
           toValue: keyboardHeight,
           duration: 250,
@@ -58,9 +61,9 @@ export default function SessionDetailScreen() {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     });
-    
+
     const hideSub = Keyboard.addListener(hideEvent, () => {
-      if (Platform.OS === 'android') {
+      if (Platform.OS === "android") {
         Animated.timing(keyboardPadding, {
           toValue: 0,
           duration: 200,
@@ -68,13 +71,12 @@ export default function SessionDetailScreen() {
         }).start();
       }
     });
-    
+
     return () => {
       showSub.remove();
       hideSub.remove();
     };
   }, [keyboardPadding]);
-
 
   // アクティビティ読み込み（初回＋ポーリング）
   useEffect(() => {
@@ -83,8 +85,8 @@ export default function SessionDetailScreen() {
 
       // ポーリング設定 (5秒ごと)
       const interval = setInterval(() => {
-        void fetchActivities(id, true).then((data) => {
-          setActivities((prev) => {
+        void fetchActivities(id, true).then(data => {
+          setActivities(prev => {
             // データが増えている場合のみ更新
             if (data.length > prev.length) {
               return data;
@@ -125,22 +127,29 @@ export default function SessionDetailScreen() {
   const handleSend = () => {
     if (!messageInput.trim()) return;
     // 現時点ではモック
-    console.log('Send message:', messageInput);
-    setMessageInput('');
+    console.log("Send message:", messageInput);
+    setMessageInput("");
   };
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: title || 'Session',
+          title: title || "Session",
           headerStyle: {
-            backgroundColor: isDark ? '#0f172a' : '#ffffff',
+            backgroundColor: isDark ? "#0f172a" : "#ffffff",
           },
-          headerTintColor: isDark ? '#f8fafc' : '#0f172a',
+          headerTintColor: isDark ? "#f8fafc" : "#0f172a",
           headerRight: () => (
-            <TouchableOpacity onPress={loadActivities} style={{ marginRight: 8 }}>
-              <IconSymbol name="arrow.clockwise" size={20} color={isDark ? '#94a3b8' : '#64748b'} />
+            <TouchableOpacity
+              onPress={loadActivities}
+              style={{ marginRight: 8 }}
+            >
+              <IconSymbol
+                name="arrow.clockwise"
+                size={20}
+                color={isDark ? "#94a3b8" : "#64748b"}
+              />
             </TouchableOpacity>
           ),
         }}
@@ -148,8 +157,8 @@ export default function SessionDetailScreen() {
 
       <KeyboardAvoidingView
         style={[styles.container, isDark && styles.containerDark]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
       >
         {/* エラー表示 */}
         {error && (
@@ -173,16 +182,24 @@ export default function SessionDetailScreen() {
           <FlatList
             ref={flatListRef}
             data={activities}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => <ActivityItem activity={item} onApprovePlan={handleApprovePlan} />}
+            keyExtractor={item => item.name}
+            renderItem={({ item }) => (
+              <ActivityItem activity={item} onApprovePlan={handleApprovePlan} />
+            )}
             contentContainerStyle={styles.chatContent}
             style={styles.chatList}
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <IconSymbol name="bubble.left.and.bubble.right" size={48} color={isDark ? '#475569' : '#94a3b8'} />
-                <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
-                  {t('noActivities')}
+                <IconSymbol
+                  name="bubble.left.and.bubble.right"
+                  size={48}
+                  color={isDark ? "#475569" : "#94a3b8"}
+                />
+                <Text
+                  style={[styles.emptyText, isDark && styles.emptyTextDark]}
+                >
+                  {t("noActivities")}
                 </Text>
               </View>
             }
@@ -195,18 +212,21 @@ export default function SessionDetailScreen() {
             styles.inputContainer,
             isDark && styles.inputContainerDark,
             { paddingBottom: 12 + insets.bottom },
-            Platform.OS === 'android' && { marginBottom: keyboardPadding },
+            Platform.OS === "android" && { marginBottom: keyboardPadding },
           ]}
         >
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             value={messageInput}
             onChangeText={setMessageInput}
-            placeholder={t('replyPlaceholder')}
-            placeholderTextColor={isDark ? '#475569' : '#94a3b8'}
+            placeholder={t("replyPlaceholder")}
+            placeholderTextColor={isDark ? "#475569" : "#94a3b8"}
           />
           <TouchableOpacity
-            style={[styles.sendButton, !messageInput.trim() && styles.sendButtonDisabled]}
+            style={[
+              styles.sendButton,
+              !messageInput.trim() && styles.sendButtonDisabled,
+            ]}
             onPress={handleSend}
             disabled={!messageInput.trim()}
           >
@@ -221,32 +241,32 @@ export default function SessionDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: "#f1f5f9",
   },
   containerDark: {
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   errorBanner: {
     margin: 12,
     padding: 12,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
     borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   errorBannerDark: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    backgroundColor: "rgba(239, 68, 68, 0.2)",
   },
   errorText: {
-    color: '#dc2626',
+    color: "#dc2626",
     fontSize: 13,
     flex: 1,
   },
   errorClose: {
-    color: '#dc2626',
+    color: "#dc2626",
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
     paddingLeft: 12,
   },
   chatContent: {
@@ -257,58 +277,58 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   emptyContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 60,
   },
   emptyText: {
     fontSize: 14,
-    color: '#64748b',
+    color: "#64748b",
     marginTop: 16,
   },
   emptyTextDark: {
-    color: '#94a3b8',
+    color: "#94a3b8",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     padding: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: "#e2e8f0",
   },
   inputContainerDark: {
-    backgroundColor: '#1e293b',
-    borderTopColor: '#334155',
+    backgroundColor: "#1e293b",
+    borderTopColor: "#334155",
   },
   input: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: "#f1f5f9",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#0f172a',
+    color: "#0f172a",
   },
   inputDark: {
-    backgroundColor: '#0f172a',
-    color: '#f8fafc',
+    backgroundColor: "#0f172a",
+    color: "#f8fafc",
   },
   sendButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#2563eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#2563eb',
+    backgroundColor: "#2563eb",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#2563eb",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
   },
   sendButtonDisabled: {
-    backgroundColor: '#94a3b8',
+    backgroundColor: "#94a3b8",
     shadowOpacity: 0,
   },
 });

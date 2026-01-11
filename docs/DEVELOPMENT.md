@@ -75,7 +75,7 @@ bun start
 
 # Run on platforms
 bun ios         # iOS Simulator
-bun android     # Android Emulator  
+bun android     # Android Emulator
 bun web         # Web browser
 
 # Linting
@@ -134,12 +134,12 @@ jules-mobile-client/
 
 ```tsx
 // app/new-screen.tsx
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
 export default function NewScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'New Screen' }} />
+      <Stack.Screen options={{ title: "New Screen" }} />
       {/* Content */}
     </>
   );
@@ -149,9 +149,9 @@ export default function NewScreen() {
 2. Navigate using expo-router:
 
 ```tsx
-import { router } from 'expo-router';
+import { router } from "expo-router";
 
-router.push('/new-screen');
+router.push("/new-screen");
 ```
 
 ### Adding a New Component
@@ -160,9 +160,9 @@ router.push('/new-screen');
 
 ```tsx
 // components/jules/my-component.tsx
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { View, Text, StyleSheet } from "react-native";
+import React from "react";
 
 interface MyComponentProps {
   title: string;
@@ -170,7 +170,7 @@ interface MyComponentProps {
 
 export function MyComponent({ title }: MyComponentProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
@@ -182,17 +182,17 @@ export function MyComponent({ title }: MyComponentProps) {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   containerDark: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
   },
   title: {
     fontSize: 16,
-    color: '#0f172a',
+    color: "#0f172a",
   },
   titleDark: {
-    color: '#f8fafc',
+    color: "#f8fafc",
   },
 });
 ```
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
 
 ```tsx
 // components/jules/index.ts
-export { MyComponent } from './my-component';
+export { MyComponent } from "./my-component";
 ```
 
 ### Adding Translations
@@ -212,11 +212,11 @@ export { MyComponent } from './my-component';
 const translations = {
   ja: {
     // ...existing
-    myNewKey: '日本語テキスト',
+    myNewKey: "日本語テキスト",
   },
   en: {
     // ...existing
-    myNewKey: 'English text',
+    myNewKey: "English text",
   },
 };
 ```
@@ -226,7 +226,7 @@ const translations = {
 ```tsx
 const { t } = useI18n();
 
-<Text>{t('myNewKey')}</Text>
+<Text>{t("myNewKey")}</Text>;
 ```
 
 ### Adding API Endpoints
@@ -245,7 +245,7 @@ export interface NewResponse {
 const fetchNewData = useCallback(async (): Promise<string[]> => {
   setIsLoading(true);
   try {
-    const data = await julesFetch<NewResponse>('/new-endpoint');
+    const data = await julesFetch<NewResponse>("/new-endpoint");
     return data.data || [];
   } catch (err) {
     setError(err.message);
@@ -288,7 +288,7 @@ npx react-devtools
 ### Console Logging
 
 ```typescript
-console.log('Debug:', JSON.stringify(data, null, 2));
+console.log("Debug:", JSON.stringify(data, null, 2));
 ```
 
 ### Network Debugging
@@ -297,8 +297,8 @@ Check API calls in the Expo dev tools Network tab or use:
 
 ```typescript
 // In useJulesApi hook
-console.log('API Request:', url, options);
-console.log('API Response:', response);
+console.log("API Request:", url, options);
+console.log("API Response:", response);
 ```
 
 ## Testing
@@ -343,11 +343,11 @@ eas build --platform ios --profile production
 
 See `eas.json` for build configurations:
 
-| Profile | Use Case |
-|---------|----------|
+| Profile       | Use Case                  |
+| ------------- | ------------------------- |
 | `development` | Dev client with debugging |
-| `preview` | Internal testing APK |
-| `production` | Release build |
+| `preview`     | Internal testing APK      |
+| `production`  | Release build             |
 
 ## Common Issues
 

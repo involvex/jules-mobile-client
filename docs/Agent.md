@@ -13,13 +13,13 @@ Jules Mobile Client is a React Native/Expo application that provides a mobile in
 
 ## Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Expo SDK | 54 | React Native framework |
-| React Native | 0.81 | Mobile UI |
-| TypeScript | 5.3 | Type safety |
-| Expo Router | 4.x | File-based routing |
-| Bun | latest | Package manager & runtime |
+| Technology   | Version | Purpose                   |
+| ------------ | ------- | ------------------------- |
+| Expo SDK     | 54      | React Native framework    |
+| React Native | 0.81    | Mobile UI                 |
+| TypeScript   | 5.3     | Type safety               |
+| Expo Router  | 4.x     | File-based routing        |
+| Bun          | latest  | Package manager & runtime |
 
 ## Key Directories
 
@@ -63,13 +63,13 @@ hooks/
 All Jules API calls go through `hooks/use-jules-api.ts`:
 
 ```typescript
-const { 
-  isLoading, 
-  error, 
+const {
+  isLoading,
+  error,
   fetchSessions,
   fetchActivities,
   createSession,
-  approvePlan 
+  approvePlan,
 } = useJulesApi({ apiKey, t });
 ```
 
@@ -135,13 +135,13 @@ Base URL: `https://jules.googleapis.com/v1alpha`
 
 ### Endpoints Used
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/sources` | GET | List connected repositories |
-| `/sessions` | GET | List all sessions |
-| `/sessions` | POST | Create new session |
-| `/sessions/{id}/activities` | GET | Get session activities |
-| `/sessions/{id}:approvePlan` | POST | Approve a plan |
+| Endpoint                     | Method | Description                 |
+| ---------------------------- | ------ | --------------------------- |
+| `/sources`                   | GET    | List connected repositories |
+| `/sessions`                  | GET    | List all sessions           |
+| `/sessions`                  | POST   | Create new session          |
+| `/sessions/{id}/activities`  | GET    | Get session activities      |
+| `/sessions/{id}:approvePlan` | POST   | Approve a plan              |
 
 ### Create Session Request Body
 
@@ -220,6 +220,7 @@ bun lint
 ```
 
 # type-checking
+
 ```bash
 bun oxc
 ```

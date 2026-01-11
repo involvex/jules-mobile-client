@@ -19,15 +19,15 @@
 
 ## ✨ 特徴
 
--  **クロスプラットフォーム** - ExpoによりiOSとAndroidで動作
--  **ダークモード** - ライト/ダークテーマ完全対応
--  **多言語対応** - 日本語・英語のローカライズ
--  **セキュアストレージ** - expo-secure-storeによる安全なAPIキー保存
--  **リアルタイムチャット** - Julesセッションの表示と対話
--  **Markdown対応** - シンタックスハイライト付きリッチテキスト表示
+- **クロスプラットフォーム** - ExpoによりiOSとAndroidで動作
+- **ダークモード** - ライト/ダークテーマ完全対応
+- **多言語対応** - 日本語・英語のローカライズ
+- **セキュアストレージ** - expo-secure-storeによる安全なAPIキー保存
+- **リアルタイムチャット** - Julesセッションの表示と対話
+- **Markdown対応** - シンタックスハイライト付きリッチテキスト表示
 - ⚡ **最適化されたパフォーマンス** - メモ化コンポーネントと効率的なリスト描画
 
-##  スクリーンショット
+## スクリーンショット
 
 <p align="center">
   <img src="assets/screenshots/sessions.png" alt="セッション一覧" width="200" />
@@ -35,11 +35,11 @@
   <img src="assets/screenshots/settings.png" alt="設定" width="200" />
 </p>
 
-| セッション一覧 | タスク作成 | 設定 |
-|:------------:|:--------:|:----:|
+|        セッション一覧        |         タスク作成         |     設定      |
+| :--------------------------: | :------------------------: | :-----------: |
 | 全アクティブセッションを表示 | 新規コーディングタスク作成 | APIキーと設定 |
 
-##  はじめに
+## はじめに
 
 ### 必要なもの
 
@@ -106,9 +106,9 @@ bun reset-project  # クリーン状態にリセット
 3. Jules APIキーを入力
 4. キーはデバイスにセキュアに保存されます
 
->  APIキーは[Google Cloud Console](https://console.cloud.google.com/)またはJulesの設定ページから取得できます。
+> APIキーは[Google Cloud Console](https://console.cloud.google.com/)またはJulesの設定ページから取得できます。
 
-##  プロジェクト構成
+## プロジェクト構成
 
 ```
 jules-mobile-client/
@@ -136,7 +136,7 @@ jules-mobile-client/
 └── docs/                  # ドキュメント
 ```
 
-##  Jules API 連携
+## Jules API 連携
 
 アプリは[Jules API](https://jules.googleapis.com/v1alpha)と連携して以下を実現：
 
@@ -149,16 +149,16 @@ jules-mobile-client/
 
 ## ️ 技術スタック
 
-| 技術 | 用途 |
-|-----|-----|
-| [Expo SDK 54](https://expo.dev/) | React Nativeフレームワーク |
-| [Expo Router](https://docs.expo.dev/router/introduction/) | ファイルベースルーティング |
-| [React Native 0.81](https://reactnative.dev/) | モバイルUIフレームワーク |
-| [TypeScript](https://www.typescriptlang.org/) | 型安全性 |
-| [expo-secure-store](https://docs.expo.dev/versions/latest/sdk/securestore/) | セキュアストレージ |
-| [react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display) | Markdownレンダリング |
+| 技術                                                                                      | 用途                       |
+| ----------------------------------------------------------------------------------------- | -------------------------- |
+| [Expo SDK 54](https://expo.dev/)                                                          | React Nativeフレームワーク |
+| [Expo Router](https://docs.expo.dev/router/introduction/)                                 | ファイルベースルーティング |
+| [React Native 0.81](https://reactnative.dev/)                                             | モバイルUIフレームワーク   |
+| [TypeScript](https://www.typescriptlang.org/)                                             | 型安全性                   |
+| [expo-secure-store](https://docs.expo.dev/versions/latest/sdk/securestore/)               | セキュアストレージ         |
+| [react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display) | Markdownレンダリング       |
 
-##  本番ビルド
+## 本番ビルド
 
 ### EAS Buildを使用
 
@@ -178,13 +178,13 @@ eas build --platform ios --profile production
 
 ### ビルドプロファイル
 
-| プロファイル | 説明 |
-|------------|------|
+| プロファイル  | 説明                         |
+| ------------- | ---------------------------- |
 | `development` | デバッグ付き開発クライアント |
-| `preview` | 内部配布用APK |
-| `production` | 本番用ビルド |
+| `preview`     | 内部配布用APK                |
+| `production`  | 本番用ビルド                 |
 
-##  コントリビューション
+## コントリビューション
 
 コントリビューションは大歓迎です！PRを送る前にコントリビューションガイドラインをお読みください。
 
@@ -198,7 +198,7 @@ eas build --platform ios --profile production
 
 このプロジェクトはBSD 2-Clauseライセンスの下で公開されています - 詳細は[LICENSE](LICENSE)ファイルを参照してください。
 
-##  謝辞
+## 謝辞
 
 - [Google Jules](https://jules.google/) - AIコーディングアシスタント
 - [Expo](https://expo.dev/) - 素晴らしいReact Nativeツール

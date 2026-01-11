@@ -31,12 +31,12 @@ This document describes the architecture of the Jules Mobile Client application.
 
 Located in `app/` directory, using Expo Router's file-based routing.
 
-| Screen | Path | Description |
-|--------|------|-------------|
-| Sessions List | `/(tabs)/index.tsx` | Main session list with FAB |
-| Settings | `/(tabs)/settings.tsx` | API key and preferences |
-| Session Detail | `/session/[id].tsx` | Chat view with activities |
-| Create Session | `/create-session.tsx` | New task creation modal |
+| Screen         | Path                   | Description                |
+| -------------- | ---------------------- | -------------------------- |
+| Sessions List  | `/(tabs)/index.tsx`    | Main session list with FAB |
+| Settings       | `/(tabs)/settings.tsx` | API key and preferences    |
+| Session Detail | `/session/[id].tsx`    | Chat view with activities  |
+| Create Session | `/create-session.tsx`  | New task creation modal    |
 
 ### 2. Component Layer
 
@@ -78,6 +78,7 @@ const {
 ```
 
 Features:
+
 - Automatic error handling
 - Loading state management
 - Pagination support for sources
@@ -108,14 +109,14 @@ Strict TypeScript definitions for all API responses:
 interface Session {
   name: string;
   title?: string;
-  state: 'ACTIVE' | 'COMPLETED' | 'FAILED';
+  state: "ACTIVE" | "COMPLETED" | "FAILED";
   createTime: string;
   updateTime: string;
 }
 
 interface Activity {
   name: string;
-  originator: 'agent' | 'user';
+  originator: "agent" | "user";
   agentMessaged?: { agentMessage: string };
   userMessaged?: { userMessage: string };
   planGenerated?: { plan: Plan };
@@ -164,6 +165,7 @@ const { language, setLanguage, t } = useI18n();
 ### Local State (useState)
 
 Used for component-specific state:
+
 - Form inputs
 - UI toggles
 - Temporary data
@@ -171,6 +173,7 @@ Used for component-specific state:
 ### Context (React Context)
 
 Used for app-wide state:
+
 - API Key
 - Language preference
 - Theme (via Appearance API)
@@ -178,6 +181,7 @@ Used for app-wide state:
 ### Persistent State (SecureStore)
 
 Used for secure, persistent data:
+
 - API Key
 - User preferences
 
@@ -193,26 +197,28 @@ Used for secure, persistent data:
 
 ```typescript
 // Light Theme
-background: '#f8fafc'
-card: '#ffffff'
-text: '#0f172a'
-accent: '#2563eb'
+background: "#f8fafc";
+card: "#ffffff";
+text: "#0f172a";
+accent: "#2563eb";
 
 // Dark Theme
-background: '#020617'
-card: '#1e293b'
-text: '#f8fafc'
-accent: '#60a5fa'
+background: "#020617";
+card: "#1e293b";
+text: "#f8fafc";
+accent: "#60a5fa";
 ```
 
 ## Performance Optimizations
 
 1. **Memoized Components**
+
    ```typescript
    const MemoizedSessionCard = memo(SessionCard);
    ```
 
 2. **FlatList Optimization**
+
    ```typescript
    <FlatList
      removeClippedSubviews={true}
@@ -235,7 +241,7 @@ accent: '#60a5fa'
 
 ```typescript
 try {
-  const data = await julesFetch('/sessions');
+  const data = await julesFetch("/sessions");
 } catch (err) {
   setError(err.message);
 }

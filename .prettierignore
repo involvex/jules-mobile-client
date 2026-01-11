@@ -1,0 +1,3 @@
+__tests__/github-api.test.ts
+node_modules/**/*
+dist/**/*

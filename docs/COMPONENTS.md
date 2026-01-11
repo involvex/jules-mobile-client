@@ -21,23 +21,20 @@ interface ActivityItemProps {
 
 **Supported Activity Types:**
 
-| Type | Visual |
-|------|--------|
-| `agentMessaged` | Blue bubble with Jules avatar, Markdown rendered |
-| `userMessaged` | Right-aligned bubble |
-| `planGenerated` | Card with numbered step list |
-| `planApprovalRequested` | Warning card with Approve button |
-| `planApproved` | Success indicator |
-| `progressUpdated` | Info banner |
-| `artifacts` | Expandable code/bash output |
+| Type                    | Visual                                           |
+| ----------------------- | ------------------------------------------------ |
+| `agentMessaged`         | Blue bubble with Jules avatar, Markdown rendered |
+| `userMessaged`          | Right-aligned bubble                             |
+| `planGenerated`         | Card with numbered step list                     |
+| `planApprovalRequested` | Warning card with Approve button                 |
+| `planApproved`          | Success indicator                                |
+| `progressUpdated`       | Info banner                                      |
+| `artifacts`             | Expandable code/bash output                      |
 
 **Usage:**
 
 ```tsx
-<ActivityItem 
-  activity={activity} 
-  onApprovePlan={handleApprove} 
-/>
+<ActivityItem activity={activity} onApprovePlan={handleApprove} />
 ```
 
 ---
@@ -64,15 +61,17 @@ interface ActivityItemSkeletonProps {
 **Usage:**
 
 ```tsx
-{isLoading ? (
-  <>
-    <ActivityItemSkeleton isAgent={true} />
-    <ActivityItemSkeleton isAgent={false} />
-    <ActivityItemSkeleton isAgent={true} />
-  </>
-) : (
-  activities.map(a => <ActivityItem key={a.name} activity={a} />)
-)}
+{
+  isLoading ? (
+    <>
+      <ActivityItemSkeleton isAgent={true} />
+      <ActivityItemSkeleton isAgent={false} />
+      <ActivityItemSkeleton isAgent={true} />
+    </>
+  ) : (
+    activities.map(a => <ActivityItem key={a.name} activity={a} />)
+  );
+}
 ```
 
 ---
@@ -101,10 +100,7 @@ interface SessionCardProps {
 **Usage:**
 
 ```tsx
-<SessionCard 
-  session={session} 
-  onPress={() => openSession(session)} 
-/>
+<SessionCard session={session} onPress={() => openSession(session)} />
 ```
 
 ---
@@ -122,14 +118,16 @@ Shimmer-animated skeleton placeholder for session cards.
 **Usage:**
 
 ```tsx
-{isLoading ? (
-  <>
-    <SessionCardSkeleton />
-    <SessionCardSkeleton />
-  </>
-) : (
-  sessions.map(s => <SessionCard key={s.name} session={s} />)
-)}
+{
+  isLoading ? (
+    <>
+      <SessionCardSkeleton />
+      <SessionCardSkeleton />
+    </>
+  ) : (
+    sessions.map(s => <SessionCard key={s.name} session={s} />)
+  );
+}
 ```
 
 ---
@@ -152,10 +150,7 @@ interface LoadingOverlayProps {
 **Usage:**
 
 ```tsx
-<LoadingOverlay 
-  visible={isLoading} 
-  message="Processing..." 
-/>
+<LoadingOverlay visible={isLoading} message="Processing..." />
 ```
 
 ---
@@ -217,10 +212,10 @@ Displays open source licenses for all third-party libraries used in the app.
 **Navigation:**
 
 ```tsx
-import { router } from 'expo-router';
+import { router } from "expo-router";
 
 // From settings
-router.push('/licenses');
+router.push("/licenses");
 ```
 
 ---
@@ -247,35 +242,31 @@ interface IconSymbolProps {
 
 **Available Icons:**
 
-| SF Symbol Name | Material Icon | Usage |
-|----------------|---------------|-------|
-| `house.fill` | `home` | Home tab |
-| `paperplane.fill` | `send` | Send button |
-| `chevron.right` | `chevron-right` | Navigation |
-| `chevron.down` | `keyboard-arrow-down` | Dropdown |
-| `arrow.clockwise` | `refresh` | Refresh |
-| `plus` | `add` | Add/Create |
-| `xmark` | `close` | Close |
-| `checkmark.circle.fill` | `check-circle` | Success |
-| `xmark.circle.fill` | `cancel` | Error |
-| `message.fill` | `chat` | Chat/Message |
-| `gearshape.fill` | `settings` | Settings |
-| `key` | `vpn-key` | API Key |
-| `terminal` | `terminal` | Terminal/Code |
-| `doc.text` | `description` | Document |
-| `lightbulb` | `lightbulb` | Hint/Tip |
-| `link` | `link` | Link/URL |
-| `sun.max.fill` | `light-mode` | Light theme |
-| `moon.fill` | `dark-mode` | Dark theme |
+| SF Symbol Name          | Material Icon         | Usage         |
+| ----------------------- | --------------------- | ------------- |
+| `house.fill`            | `home`                | Home tab      |
+| `paperplane.fill`       | `send`                | Send button   |
+| `chevron.right`         | `chevron-right`       | Navigation    |
+| `chevron.down`          | `keyboard-arrow-down` | Dropdown      |
+| `arrow.clockwise`       | `refresh`             | Refresh       |
+| `plus`                  | `add`                 | Add/Create    |
+| `xmark`                 | `close`               | Close         |
+| `checkmark.circle.fill` | `check-circle`        | Success       |
+| `xmark.circle.fill`     | `cancel`              | Error         |
+| `message.fill`          | `chat`                | Chat/Message  |
+| `gearshape.fill`        | `settings`            | Settings      |
+| `key`                   | `vpn-key`             | API Key       |
+| `terminal`              | `terminal`            | Terminal/Code |
+| `doc.text`              | `description`         | Document      |
+| `lightbulb`             | `lightbulb`           | Hint/Tip      |
+| `link`                  | `link`                | Link/URL      |
+| `sun.max.fill`          | `light-mode`          | Light theme   |
+| `moon.fill`             | `dark-mode`           | Dark theme    |
 
 **Usage:**
 
 ```tsx
-<IconSymbol 
-  name="paperplane.fill" 
-  size={24} 
-  color="#2563eb" 
-/>
+<IconSymbol name="paperplane.fill" size={24} color="#2563eb" />
 ```
 
 ---
@@ -321,28 +312,28 @@ const isDark = colorScheme === 'dark';
 ```typescript
 // Light
 const colors = {
-  background: '#f8fafc',
-  card: '#ffffff',
-  text: '#0f172a',
-  textSecondary: '#64748b',
-  border: '#e2e8f0',
-  accent: '#2563eb',
-  success: '#059669',
-  error: '#dc2626',
-  warning: '#f59e0b',
+  background: "#f8fafc",
+  card: "#ffffff",
+  text: "#0f172a",
+  textSecondary: "#64748b",
+  border: "#e2e8f0",
+  accent: "#2563eb",
+  success: "#059669",
+  error: "#dc2626",
+  warning: "#f59e0b",
 };
 
 // Dark
 const darkColors = {
-  background: '#020617',
-  card: '#1e293b',
-  text: '#f8fafc',
-  textSecondary: '#94a3b8',
-  border: '#334155',
-  accent: '#60a5fa',
-  success: '#34d399',
-  error: '#f87171',
-  warning: '#fbbf24',
+  background: "#020617",
+  card: "#1e293b",
+  text: "#f8fafc",
+  textSecondary: "#94a3b8",
+  border: "#334155",
+  accent: "#60a5fa",
+  success: "#34d399",
+  error: "#f87171",
+  warning: "#fbbf24",
 };
 ```
 
@@ -351,15 +342,17 @@ const darkColors = {
 ## Performance Tips
 
 1. **Use memo() for list items:**
+
    ```tsx
    const MemoizedCard = memo(SessionCard);
    ```
 
 2. **Avoid inline styles in lists:**
+
    ```tsx
    // Bad
    <View style={{ margin: 10 }} />
-   
+
    // Good
    <View style={styles.container} />
    ```

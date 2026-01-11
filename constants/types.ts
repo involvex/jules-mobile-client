@@ -32,7 +32,7 @@ export interface Source {
 export interface Session {
   name: string; // "sessions/..."
   title?: string;
-  state: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
+  state: "STATE_UNSPECIFIED" | "ACTIVE" | "COMPLETED" | "FAILED";
   createTime: string;
   updateTime: string;
 }
@@ -70,26 +70,26 @@ export interface Activity {
   name: string;
   id: string;
   createTime: string;
-  
+
   // originator: "agent" | "user"
-  originator: 'agent' | 'user';
-  
+  originator: "agent" | "user";
+
   // エージェントからのメッセージ
   agentMessaged?: {
     agentMessage: string;
   };
-  
+
   // ユーザーからのメッセージ
   userMessaged?: {
     userMessage: string;
   };
-  
+
   // 進捗更新
   progressUpdated?: {
     title?: string;
     description?: string;
   };
-  
+
   // プラン生成
   planGenerated?: {
     plan: {
@@ -97,20 +97,20 @@ export interface Activity {
       steps?: PlanStep[];
     };
   };
-  
+
   // プラン承認
   planApproved?: {
     planId: string;
   };
-  
+
   // プラン承認リクエスト
   planApprovalRequested?: {
     planId: string;
   };
-  
+
   // アーティファクト（bashOutput等）
   artifacts?: Artifact[];
-  
+
   // タイトル（オプション）
   title?: string;
 }
@@ -132,4 +132,8 @@ export interface ListActivitiesResponse {
 }
 
 // アプリのビュー状態
-export type ViewState = 'SESSIONS' | 'SETTINGS' | 'CREATE_SESSION' | 'SESSION_DETAIL';
+export type ViewState =
+  | "SESSIONS"
+  | "SETTINGS"
+  | "CREATE_SESSION"
+  | "SESSION_DETAIL";

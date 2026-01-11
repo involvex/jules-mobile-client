@@ -1,10 +1,17 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { translations, type Language } from './i18n';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { translations, type Language } from "./i18n";
+import * as SecureStore from "expo-secure-store";
 
 type TranslationKey = keyof typeof translations.ja;
 
-const LANGUAGE_STORAGE_KEY = 'jules_language';
+const LANGUAGE_STORAGE_KEY = "jules_language";
 
 interface I18nContextType {
   language: Language;
@@ -19,7 +26,7 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children }: I18nProviderProps) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>("en");
   const [isLoaded, setIsLoaded] = useState(false);
 
   // 起動時に保存された言語設定を読み込む
@@ -27,7 +34,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
     const loadLanguage = async () => {
       try {
         const savedLang = await SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY);
-        if (savedLang === 'ja' || savedLang === 'en') {
+        if (savedLang === "ja" || savedLang === "en") {
           setLanguageState(savedLang);
         }
       } catch {
@@ -52,7 +59,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
     (key: TranslationKey): string => {
       return translations[language][key] || translations.en[key] || key;
     },
-    [language]
+    [language],
   );
 
   // 言語設定が読み込まれるまで待つ
@@ -70,7 +77,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
 export function useI18n() {
   const context = useContext(I18nContext);
   if (!context) {
-    throw new Error('useI18n must be used within an I18nProvider');
+    throw new Error("useI18n must be used within an I18nProvider");
   }
   return context;
 }

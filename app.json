@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "jules-mobile-clcient",
-    "slug": "jules-mobile-clcient",
+    "name": "jules-mobile-client",
+    "slug": "jules-mobile-client",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -49,9 +49,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": "92f0c32a-9eee-4018-8cab-190458195999"
-      }
+        "projectId": "58bfc907-6bf9-49cc-8014-b7b019c80a6b"
+      },
+      "router": {}
     },
-    "owner": "potetotown"
+    "owner": "involvex"
   }
 }

@@ -1,13 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import React from "react";
 
 interface CodeBlockProps {
   code: string;
   language?: string;
 }
 
-const KEYWORDS = /\b(const|let|var|function|return|if|else|for|while|class|import|export|from|async|await|try|catch|throw|new|this|type|interface)\b/g;
+const KEYWORDS =
+  /\b(const|let|var|function|return|if|else|for|while|class|import|export|from|async|await|try|catch|throw|new|this|type|interface)\b/g;
 const STRINGS = /(["'`])(?:(?!\1)[^\\]|\\.)*?\1/g;
 const NUMBERS = /\b\d+(\.\d+)?\b/g;
 const COMMENTS = /\/\/.*|\/\*[\s\S]*?\*\//g;
@@ -15,22 +16,27 @@ const BOOLEANS = /\b(true|false|null|undefined)\b/g;
 
 export function CodeBlock({ code, language }: CodeBlockProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   const colors = {
-    keyword: isDark ? '#c586c0' : '#af00db',
-    string: isDark ? '#ce9178' : '#a31515',
-    number: isDark ? '#b5cea8' : '#098658',
-    comment: isDark ? '#6a9955' : '#008000',
-    boolean: isDark ? '#569cd6' : '#0000ff',
-    default: isDark ? '#d4d4d4' : '#1e1e1e',
+    keyword: isDark ? "#c586c0" : "#af00db",
+    string: isDark ? "#ce9178" : "#a31515",
+    number: isDark ? "#b5cea8" : "#098658",
+    comment: isDark ? "#6a9955" : "#008000",
+    boolean: isDark ? "#569cd6" : "#0000ff",
+    default: isDark ? "#d4d4d4" : "#1e1e1e",
   };
 
   // Simple highlighting by wrapping in spans
   const highlightCode = (text: string) => {
     const parts: { text: string; color: string }[] = [];
     let lastIndex = 0;
-    const matches: { index: number; length: number; color: string; text: string }[] = [];
+    const matches: {
+      index: number;
+      length: number;
+      color: string;
+      text: string;
+    }[] = [];
 
     // Collect all matches
     [
@@ -43,7 +49,12 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
       let match;
       const r = new RegExp(regex.source, regex.flags);
       while ((match = r.exec(text)) !== null) {
-        matches.push({ index: match.index, length: match[0].length, color, text: match[0] });
+        matches.push({
+          index: match.index,
+          length: match[0].length,
+          color,
+          text: match[0],
+        });
       }
     });
 
@@ -61,7 +72,10 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
     // Build parts
     for (const m of filtered) {
       if (m.index > lastIndex) {
-        parts.push({ text: text.slice(lastIndex, m.index), color: colors.default });
+        parts.push({
+          text: text.slice(lastIndex, m.index),
+          color: colors.default,
+        });
       }
       parts.push({ text: m.text, color: m.color });
       lastIndex = m.index + m.length;
@@ -86,7 +100,9 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
         <ScrollView nestedScrollEnabled style={styles.scroll}>
           <Text style={styles.code} selectable>
             {parts.map((p, i) => (
-              <Text key={i} style={{ color: p.color }}>{p.text}</Text>
+              <Text key={i} style={{ color: p.color }}>
+                {p.text}
+              </Text>
             ))}
           </Text>
         </ScrollView>
@@ -97,35 +113,35 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginVertical: 4,
   },
   containerDark: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: "#1e1e1e",
   },
   langTag: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     paddingHorizontal: 8,
     paddingVertical: 2,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   langTagDark: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   langText: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#666',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "#666",
+    textTransform: "uppercase",
   },
   scroll: {
     maxHeight: 250,
     padding: 12,
   },
   code: {
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     fontSize: 12,
     lineHeight: 18,
   },

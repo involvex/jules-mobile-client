@@ -1,11 +1,14 @@
 // Fallback for using MaterialIcons on Android and web.
 
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
-import { ComponentProps } from 'react';
-import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
+import { OpaqueColorValue, type StyleProp, type TextStyle } from "react-native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { SymbolViewProps, SymbolWeight } from "expo-symbols";
+import { ComponentProps } from "react";
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+type IconMapping = Record<
+  SymbolViewProps["name"],
+  ComponentProps<typeof MaterialIcons>["name"]
+>;
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
@@ -15,36 +18,36 @@ type IconSymbolName = keyof typeof MAPPING;
  */
 const MAPPING = {
   // Navigation
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
-  'chevron.down': 'keyboard-arrow-down',
-  'chevron.left': 'chevron-left',
-  'arrow.clockwise': 'refresh',
-  
+  "house.fill": "home",
+  "paperplane.fill": "send",
+  "chevron.left.forwardslash.chevron.right": "code",
+  "chevron.right": "chevron-right",
+  "chevron.down": "keyboard-arrow-down",
+  "chevron.left": "chevron-left",
+  "arrow.clockwise": "refresh",
+
   // Actions
-  'plus': 'add',
-  'xmark': 'close',
-  'checkmark.circle.fill': 'check-circle',
-  'xmark.circle.fill': 'cancel',
-  'circle': 'radio-button-unchecked',
-  
+  plus: "add",
+  xmark: "close",
+  "checkmark.circle.fill": "check-circle",
+  "xmark.circle.fill": "cancel",
+  circle: "radio-button-unchecked",
+
   // Content
-  'message.fill': 'chat',
-  'bubble.left.and.bubble.right': 'forum',
-  'gearshape.fill': 'settings',
-  'key': 'vpn-key',
-  'terminal': 'terminal',
-  'doc.text': 'description',
-  'wrench': 'build',
-  'lightbulb': 'lightbulb',
-  'info.circle': 'info',
-  'link': 'link',
-  
+  "message.fill": "chat",
+  "bubble.left.and.bubble.right": "forum",
+  "gearshape.fill": "settings",
+  key: "vpn-key",
+  terminal: "terminal",
+  "doc.text": "description",
+  wrench: "build",
+  lightbulb: "lightbulb",
+  "info.circle": "info",
+  link: "link",
+
   // Theme
-  'sun.max.fill': 'light-mode',
-  'moon.fill': 'dark-mode',
+  "sun.max.fill": "light-mode",
+  "moon.fill": "dark-mode",
 } as IconMapping;
 
 /**
@@ -64,5 +67,12 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return (
+    <MaterialIcons
+      color={color}
+      size={size}
+      name={MAPPING[name]}
+      style={style}
+    />
+  );
 }

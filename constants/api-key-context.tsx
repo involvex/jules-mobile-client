@@ -1,12 +1,22 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import * as SecureStore from "expo-secure-store";
 
-const API_KEY_STORAGE_KEY = 'jules_api_key';
+const API_KEY_STORAGE_KEY = "jules_api_key";
+const GITHUB_Token = "GITHUB_TOKEN";
 
 interface ApiKeyContextType {
   apiKey: string;
   setApiKey: (key: string) => Promise<void>;
   isLoaded: boolean;
+  GITHUB_TOKEN: string;
+  setGITHUB_TOKEN: (key: string) => Promise<void>;
 }
 
 const ApiKeyContext = createContext<ApiKeyContextType | undefined>(undefined);
@@ -16,7 +26,8 @@ interface ApiKeyProviderProps {
 }
 
 export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
-  const [apiKey, setApiKeyState] = useState<string>('');
+  const [apiKey, setApiKeyState] = useState<string>("");
+  const [GITHUB_TOKEN, setGITHUB_TOKENState] = useState<string>("");
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load API key on mount
@@ -45,13 +56,24 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
     }
   }, []);
 
+  const setGITHUB_TOKEN = useCallback(async (key: string) => {
+    setGITHUB_TOKENState(key);
+    try {
+      await SecureStore.setItemAsync(GITHUB_Token, key);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
   // Wait for API key to load
   if (!isLoaded) {
     return null;
   }
 
   return (
-    <ApiKeyContext.Provider value={{ apiKey, setApiKey, isLoaded }}>
+    <ApiKeyContext.Provider
+      value={{ apiKey, setApiKey, isLoaded, GITHUB_TOKEN, setGITHUB_TOKEN }}
+    >
       {children}
     </ApiKeyContext.Provider>
   );
@@ -60,7 +82,7 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
 export function useApiKey() {
   const context = useContext(ApiKeyContext);
   if (!context) {
-    throw new Error('useApiKey must be used within an ApiKeyProvider');
+    throw new Error("useApiKey must be used within an ApiKeyProvider");
   }
   return context;
 }

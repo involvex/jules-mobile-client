@@ -45,12 +45,12 @@ GET /sessions?pageSize=20
 
 **Session States:**
 
-| State | Description | App Display (ja/en) |
-|-------|-------------|---------------------|
-| `STATE_UNSPECIFIED` | Unknown/Creating state | 作成中 / Creating |
-| `ACTIVE` | Session is in progress | 処理中 / Processing |
-| `COMPLETED` | Session finished successfully | 完了 / Completed |
-| `FAILED` | Session encountered an error | 失敗 / Failed |
+| State               | Description                   | App Display (ja/en) |
+| ------------------- | ----------------------------- | ------------------- |
+| `STATE_UNSPECIFIED` | Unknown/Creating state        | 作成中 / Creating   |
+| `ACTIVE`            | Session is in progress        | 処理中 / Processing |
+| `COMPLETED`         | Session finished successfully | 完了 / Completed    |
+| `FAILED`            | Session encountered an error  | 失敗 / Failed       |
 
 #### Create Session
 
@@ -159,15 +159,15 @@ GET /sessions/{sessionId}/activities?pageSize=50
 
 **Activity Types:**
 
-| Type | Field | Description |
-|------|-------|-------------|
-| Agent Message | `agentMessaged.agentMessage` | Text message from Jules |
-| User Message | `userMessaged.userMessage` | Text message from user |
-| Plan Generated | `planGenerated.plan` | AI-generated task plan |
-| Plan Approval Request | `planApprovalRequested.planId` | Waiting for user approval |
-| Plan Approved | `planApproved.planId` | User approved the plan |
-| Progress Update | `progressUpdated.title/description` | Task progress info |
-| Artifacts | `artifacts[]` | Bash output, code changes, etc. |
+| Type                  | Field                               | Description                     |
+| --------------------- | ----------------------------------- | ------------------------------- |
+| Agent Message         | `agentMessaged.agentMessage`        | Text message from Jules         |
+| User Message          | `userMessaged.userMessage`          | Text message from user          |
+| Plan Generated        | `planGenerated.plan`                | AI-generated task plan          |
+| Plan Approval Request | `planApprovalRequested.planId`      | Waiting for user approval       |
+| Plan Approved         | `planApproved.planId`               | User approved the plan          |
+| Progress Update       | `progressUpdated.title/description` | Task progress info              |
+| Artifacts             | `artifacts[]`                       | Bash output, code changes, etc. |
 
 ### Plans
 
@@ -199,14 +199,14 @@ POST /{planId}:approve
 
 **Common Error Codes:**
 
-| Code | Status | Description |
-|------|--------|-------------|
-| 400 | `INVALID_ARGUMENT` | Bad request parameters |
-| 401 | `UNAUTHENTICATED` | Missing or invalid API key |
-| 403 | `PERMISSION_DENIED` | Access denied |
-| 404 | `NOT_FOUND` | Resource not found |
-| 429 | `RESOURCE_EXHAUSTED` | Rate limit exceeded |
-| 500 | `INTERNAL` | Server error |
+| Code | Status               | Description                |
+| ---- | -------------------- | -------------------------- |
+| 400  | `INVALID_ARGUMENT`   | Bad request parameters     |
+| 401  | `UNAUTHENTICATED`    | Missing or invalid API key |
+| 403  | `PERMISSION_DENIED`  | Access denied              |
+| 404  | `NOT_FOUND`          | Resource not found         |
+| 429  | `RESOURCE_EXHAUSTED` | Rate limit exceeded        |
+| 500  | `INTERNAL`           | Server error               |
 
 ## TypeScript Types
 
@@ -238,7 +238,7 @@ interface Source {
 interface Session {
   name: string;
   title?: string;
-  state: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
+  state: "STATE_UNSPECIFIED" | "ACTIVE" | "COMPLETED" | "FAILED";
   createTime: string;
   updateTime: string;
 }
@@ -248,7 +248,7 @@ interface Activity {
   name: string;
   id: string;
   createTime: string;
-  originator: 'agent' | 'user';
+  originator: "agent" | "user";
   agentMessaged?: { agentMessage: string };
   userMessaged?: { userMessage: string };
   progressUpdated?: { title?: string; description?: string };

@@ -12,7 +12,10 @@
   <a href="README.ja.md">🇯🇵 日本語</a> •
   <a href="docs/ARCHITECTURE.md">📐 Architecture</a> •
   <a href="docs/API.md">🔌 API Reference</a> •
-  <a href="docs/Agent.md">🤖 Agent Guide</a>
+  <a href="docs/Agent.md">🤖 Agent Guide</a> •
+  <a href="docs/Github-Integration.md">🍎 GitHub Integration</a> •
+  <a href="docs/USER-GUIDE.md">📖 User Guide</a> •
+  <a href="docs/DEVELOPER-GUIDE.md">💻 Developer Guide</a>
 </p>
 
 ---
@@ -26,6 +29,10 @@
 - 💬 **Real-time Chat** - View and interact with Jules sessions
 - 📝 **Markdown Support** - Rich text rendering with syntax highlighting
 - ⚡ **Optimized Performance** - Memoized components and efficient list rendering
+- 🍎 **GitHub Integration** - Complete GitHub repository management and monitoring
+- 🔄 **Repository Sync** - Automatic synchronization with intelligent caching
+- 📋 **Pull Request Analysis** - AI-powered code review and analysis
+- 🔔 **Notifications** - Real-time alerts for repository events and workflow status
 
 ## 📸 Screenshots
 
@@ -35,9 +42,50 @@
   <img src="assets/screenshots/settings.png" alt="Settings" width="200" />
 </p>
 
-| Sessions | New Task | Settings |
-|:--------:|:--------:|:--------:|
+|         Sessions         |        New Task         |            Settings             |
+| :----------------------: | :---------------------: | :-----------------------------: |
 | View all active sessions | Create new coding tasks | Configure API key & preferences |
+
+## 🍎 GitHub Integration
+
+The Jules Mobile Client now includes comprehensive GitHub integration features:
+
+### 🔄 Repository Synchronization
+
+- **Automatic Sync**: Background synchronization with configurable intervals
+- **Smart Caching**: Intelligent cache invalidation and management
+- **Offline Support**: Full functionality without internet connection
+- **Conflict Resolution**: Automatic handling of local vs remote changes
+
+### 📋 Pull Request Analysis
+
+- **AI-Powered Review**: Intelligent code review and analysis using Jules AI
+- **Automated Reviews**: Automatic PR review generation with actionable feedback
+- **Metrics Calculation**: Comprehensive PR metrics including complexity scoring
+- **Review Workflow**: Full integration with GitHub review and approval workflows
+
+### 🔔 Notifications System
+
+- **Real-time Alerts**: Push notifications for repository events and workflow status
+- **Customizable Preferences**: User-configurable notification settings and filtering
+- **Event Types**: Support for workflow, PR, repository, comment, and mention events
+- **Smart Filtering**: Quiet hours support and intelligent notification filtering
+
+### 🚀 Workflow Management
+
+- **Workflow Monitoring**: Real-time monitoring of GitHub Actions workflows
+- **Run History**: Complete workflow run history and detailed logs
+- **Status Updates**: Real-time status changes and notifications
+- **Log Viewing**: Access to detailed workflow execution logs
+
+### 🔗 Deep Linking
+
+- **URL-based Sessions**: Create sessions directly from GitHub URLs
+- **Repository Context**: Sessions include repository metadata and context
+- **Branch Selection**: Choose specific branches for coding sessions
+- **Smart Templates**: Repository-specific prompt templates
+
+For detailed information about GitHub integration, see [GitHub Integration Guide](docs/Github-Integration.md).
 
 ## 🚀 Getting Started
 
@@ -149,14 +197,14 @@ See [API Reference](docs/API.md) for detailed documentation.
 
 ## 🛠️ Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| [Expo SDK 54](https://expo.dev/) | React Native framework |
-| [Expo Router](https://docs.expo.dev/router/introduction/) | File-based routing |
-| [React Native 0.81](https://reactnative.dev/) | Mobile UI framework |
-| [TypeScript](https://www.typescriptlang.org/) | Type safety |
-| [expo-secure-store](https://docs.expo.dev/versions/latest/sdk/securestore/) | Secure storage |
-| [react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display) | Markdown rendering |
+| Technology                                                                                | Purpose                |
+| ----------------------------------------------------------------------------------------- | ---------------------- |
+| [Expo SDK 54](https://expo.dev/)                                                          | React Native framework |
+| [Expo Router](https://docs.expo.dev/router/introduction/)                                 | File-based routing     |
+| [React Native 0.81](https://reactnative.dev/)                                             | Mobile UI framework    |
+| [TypeScript](https://www.typescriptlang.org/)                                             | Type safety            |
+| [expo-secure-store](https://docs.expo.dev/versions/latest/sdk/securestore/)               | Secure storage         |
+| [react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display) | Markdown rendering     |
 
 ## 📱 Building for Production
 
@@ -178,11 +226,11 @@ eas build --platform ios --profile production
 
 ### Build Profiles
 
-| Profile | Description |
-|---------|-------------|
+| Profile       | Description                       |
+| ------------- | --------------------------------- |
 | `development` | Development client with debugging |
-| `preview` | Internal distribution APK |
-| `production` | Production-ready build |
+| `preview`     | Internal distribution APK         |
+| `production`  | Production-ready build            |
 
 ## 🤝 Contributing
 

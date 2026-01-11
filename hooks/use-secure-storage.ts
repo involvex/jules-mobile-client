@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useState } from "react";
 
-const API_KEY_STORAGE_KEY = 'jules_api_key';
-const THEME_STORAGE_KEY = 'jules_theme';
-const LANGUAGE_STORAGE_KEY = 'jules_language';
+const API_KEY_STORAGE_KEY = "jules_api_key";
+const THEME_STORAGE_KEY = "jules_theme";
+const LANGUAGE_STORAGE_KEY = "jules_language";
 
 /**
  * SecureStoreを使用したセキュアストレージフック
@@ -40,26 +40,29 @@ export function useSecureStorage() {
   }, []);
 
   // テーマの保存 (非機密情報なのでSecureStoreでもOK)
-  const saveTheme = useCallback(async (theme: 'light' | 'dark'): Promise<void> => {
-    try {
-      await SecureStore.setItemAsync(THEME_STORAGE_KEY, theme);
-    } catch {
-      // 無視
-    }
-  }, []);
+  const saveTheme = useCallback(
+    async (theme: "light" | "dark"): Promise<void> => {
+      try {
+        await SecureStore.setItemAsync(THEME_STORAGE_KEY, theme);
+      } catch {
+        // 無視
+      }
+    },
+    [],
+  );
 
   // テーマの取得
-  const getTheme = useCallback(async (): Promise<'light' | 'dark' | null> => {
+  const getTheme = useCallback(async (): Promise<"light" | "dark" | null> => {
     try {
       const theme = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
-      return theme as 'light' | 'dark' | null;
+      return theme as "light" | "dark" | null;
     } catch {
       return null;
     }
   }, []);
 
   // 言語の保存
-  const saveLanguage = useCallback(async (lang: 'ja' | 'en'): Promise<void> => {
+  const saveLanguage = useCallback(async (lang: "ja" | "en"): Promise<void> => {
     try {
       await SecureStore.setItemAsync(LANGUAGE_STORAGE_KEY, lang);
     } catch {
@@ -68,10 +71,10 @@ export function useSecureStorage() {
   }, []);
 
   // 言語の取得
-  const getLanguage = useCallback(async (): Promise<'ja' | 'en' | null> => {
+  const getLanguage = useCallback(async (): Promise<"ja" | "en" | null> => {
     try {
       const lang = await SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY);
-      return lang as 'ja' | 'en' | null;
+      return lang as "ja" | "en" | null;
     } catch {
       return null;
     }

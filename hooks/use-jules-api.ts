@@ -1,17 +1,16 @@
-import { useState, useCallback, useRef } from 'react';
 import type {
-  Session,
-  Source,
   Activity,
+  ApiError,
+  ListActivitiesResponse,
   ListSessionsResponse,
   ListSourcesResponse,
-  ListActivitiesResponse,
-  ApiError,
-} from '@/constants/types';
+  Session,
+  Source,
+} from "@/constants/types";
+import { useCallback, useRef, useState } from "react";
 
-const BASE_URL = 'https://jules.googleapis.com/v1alpha';
+const BASE_URL = "https://jules.googleapis.com/v1alpha";
 
- 
 type TranslatorFn = (key: any) => string;
 
 interface UseJulesApiOptions {
@@ -25,7 +24,7 @@ interface UseJulesApiOptions {
 export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Sources pagination state
   const [sources, setSources] = useState<Source[]>([]);
   const [hasMoreSources, setHasMoreSources] = useState(true);
@@ -33,22 +32,27 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
   const sourcesPageTokenRef = useRef<string | undefined>(undefined);
 
   // Translation helper
-  const translate = useCallback((key: string, fallback: string) => {
-    return t ? t(key) : fallback;
-  }, [t]);
+  const translate = useCallback(
+    (key: string, fallback: string) => {
+      return t ? t(key) : fallback;
+    },
+    [t],
+  );
 
   // Generic fetch function
   const julesFetch = useCallback(
     async <T>(endpoint: string, options: RequestInit = {}): Promise<T> => {
       if (!apiKey) {
-        throw new Error(translate('apiKeyNotSet', 'API key not set! Enter it in Settings.'));
+        throw new Error(
+          translate("apiKeyNotSet", "API key not set! Enter it in Settings."),
+        );
       }
 
       const url = `${BASE_URL}${endpoint}`;
 
       const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
         ...(options.headers as Record<string, string>),
       };
 
@@ -56,47 +60,63 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
 
       if (!response.ok) {
         const errorData = (await response.json()) as ApiError;
-        console.log('API Error Response:', JSON.stringify(errorData, null, 2));
-        throw new Error(errorData.error?.message || `${translate('apiError', 'API Error')}: ${response.status}`);
+        console.log("API Error Response:", JSON.stringify(errorData, null, 2));
+        throw new Error(
+          errorData.error?.message ||
+            `${translate("apiError", "API Error")}: ${response.status}`,
+        );
       }
 
       return (await response.json()) as T;
     },
-    [apiKey, translate]
+    [apiKey, translate],
   );
 
   // Fetch sources (initial load or reset)
-  const fetchSources = useCallback(async (silent: boolean = false): Promise<Source[]> => {
-    if (!silent) setIsLoading(true);
-    setError(null);
-    sourcesPageTokenRef.current = undefined;
-    
-    try {
-      const data: ListSourcesResponse = await julesFetch<ListSourcesResponse>('/sources?pageSize=20');
-      const fetchedSources = data.sources || [];
-      setSources(fetchedSources);
-      sourcesPageTokenRef.current = data.nextPageToken;
-      setHasMoreSources(!!data.nextPageToken);
-      return fetchedSources;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : translate('fetchSourcesFailed', 'Failed to fetch sources');
-      setError(message);
-      return [];
-    } finally {
-      if (!silent) setIsLoading(false);
-    }
-  }, [julesFetch, translate]);
+  const fetchSources = useCallback(
+    async (silent: boolean = false): Promise<Source[]> => {
+      if (!silent) setIsLoading(true);
+      setError(null);
+      sourcesPageTokenRef.current = undefined;
+
+      try {
+        const data: ListSourcesResponse = await julesFetch<ListSourcesResponse>(
+          "/sources?pageSize=20",
+        );
+        const fetchedSources = data.sources || [];
+        setSources(fetchedSources);
+        sourcesPageTokenRef.current = data.nextPageToken;
+        setHasMoreSources(!!data.nextPageToken);
+        return fetchedSources;
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : translate("fetchSourcesFailed", "Failed to fetch sources");
+        setError(message);
+        return [];
+      } finally {
+        if (!silent) setIsLoading(false);
+      }
+    },
+    [julesFetch, translate],
+  );
 
   // Fetch more sources (pagination on scroll)
   const fetchMoreSources = useCallback(async (): Promise<Source[]> => {
-    if (!hasMoreSources || isLoadingMoreSources || !sourcesPageTokenRef.current) {
+    if (
+      !hasMoreSources ||
+      isLoadingMoreSources ||
+      !sourcesPageTokenRef.current
+    ) {
       return sources;
     }
-    
+
     setIsLoadingMoreSources(true);
     try {
       const endpoint = `/sources?pageSize=20&pageToken=${sourcesPageTokenRef.current}`;
-      const data: ListSourcesResponse = await julesFetch<ListSourcesResponse>(endpoint);
+      const data: ListSourcesResponse =
+        await julesFetch<ListSourcesResponse>(endpoint);
       const newSources = data.sources || [];
       const allSources = [...sources, ...newSources];
       setSources(allSources);
@@ -104,7 +124,10 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
       setHasMoreSources(!!data.nextPageToken);
       return allSources;
     } catch (err) {
-      const message = err instanceof Error ? err.message : translate('fetchSourcesFailed', 'Failed to fetch sources');
+      const message =
+        err instanceof Error
+          ? err.message
+          : translate("fetchSourcesFailed", "Failed to fetch sources");
       setError(message);
       return sources;
     } finally {
@@ -113,43 +136,61 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
   }, [julesFetch, sources, hasMoreSources, isLoadingMoreSources, translate]);
 
   // Fetch sessions
-  const fetchSessions = useCallback(async (silent: boolean = false): Promise<Session[]> => {
-    if (!silent) setIsLoading(true);
-    setError(null);
-    try {
-      const data = await julesFetch<ListSessionsResponse>('/sessions?pageSize=20');
-      return data.sessions || [];
-    } catch (err) {
-      const message = err instanceof Error ? err.message : translate('fetchSessionsFailed', 'Failed to fetch sessions');
-      setError(message);
-      return [];
-    } finally {
-      if (!silent) setIsLoading(false);
-    }
-  }, [julesFetch, translate]);
-
-  // Fetch activities
-  const fetchActivities = useCallback(
-    async (sessionName: string, silent: boolean = false): Promise<Activity[]> => {
+  const fetchSessions = useCallback(
+    async (silent: boolean = false): Promise<Session[]> => {
       if (!silent) setIsLoading(true);
       setError(null);
       try {
-        const data = await julesFetch<ListActivitiesResponse>(
-          `/${sessionName}/activities?pageSize=50`
+        const data = await julesFetch<ListSessionsResponse>(
+          "/sessions?pageSize=20",
         );
-        const sorted = (data.activities || []).sort(
-          (a, b) => new Date(a.createTime).getTime() - new Date(b.createTime).getTime()
-        );
-        return sorted;
+        return data.sessions || [];
       } catch (err) {
-        const message = err instanceof Error ? err.message : translate('fetchActivitiesFailed', 'Failed to fetch chat history...');
+        const message =
+          err instanceof Error
+            ? err.message
+            : translate("fetchSessionsFailed", "Failed to fetch sessions");
         setError(message);
         return [];
       } finally {
         if (!silent) setIsLoading(false);
       }
     },
-    [julesFetch, translate]
+    [julesFetch, translate],
+  );
+
+  // Fetch activities
+  const fetchActivities = useCallback(
+    async (
+      sessionName: string,
+      silent: boolean = false,
+    ): Promise<Activity[]> => {
+      if (!silent) setIsLoading(true);
+      setError(null);
+      try {
+        const data = await julesFetch<ListActivitiesResponse>(
+          `/${sessionName}/activities?pageSize=50`,
+        );
+        const sorted = (data.activities || []).sort(
+          (a, b) =>
+            new Date(a.createTime).getTime() - new Date(b.createTime).getTime(),
+        );
+        return sorted;
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : translate(
+                "fetchActivitiesFailed",
+                "Failed to fetch chat history...",
+              );
+        setError(message);
+        return [];
+      } finally {
+        if (!silent) setIsLoading(false);
+      }
+    },
+    [julesFetch, translate],
   );
 
   // Approve plan
@@ -159,22 +200,29 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
       setError(null);
       try {
         await julesFetch(`/${planId}:approve`, {
-          method: 'POST',
+          method: "POST",
         });
       } catch (err) {
-        const message = err instanceof Error ? err.message : translate('approvePlanFailed', 'Failed to approve plan');
+        const message =
+          err instanceof Error
+            ? err.message
+            : translate("approvePlanFailed", "Failed to approve plan");
         setError(message);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [julesFetch, translate]
+    [julesFetch, translate],
   );
 
   // Create session
   const createSession = useCallback(
-    async (sourceName: string, prompt: string, defaultBranch?: string): Promise<Session | null> => {
+    async (
+      sourceName: string,
+      prompt: string,
+      defaultBranch?: string,
+    ): Promise<Session | null> => {
       setIsLoading(true);
       setError(null);
       try {
@@ -192,7 +240,9 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
           sourceContext: {
             source: sourceName,
           },
-          title: prompt.trim().slice(0, 30) + (prompt.trim().length > 30 ? '...' : ''),
+          title:
+            prompt.trim().slice(0, 30) +
+            (prompt.trim().length > 30 ? "..." : ""),
         };
 
         // Add githubRepoContext if defaultBranch is provided
@@ -202,23 +252,29 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
           };
         }
 
-        console.log('Creating session with body:', JSON.stringify(body, null, 2));
+        console.log(
+          "Creating session with body:",
+          JSON.stringify(body, null, 2),
+        );
 
-        const session = await julesFetch<Session>('/sessions', {
-          method: 'POST',
+        const session = await julesFetch<Session>("/sessions", {
+          method: "POST",
           body: JSON.stringify(body),
         });
 
         return session;
       } catch (err) {
-        const message = err instanceof Error ? err.message : translate('createSessionFailed', 'Failed to create session');
+        const message =
+          err instanceof Error
+            ? err.message
+            : translate("createSessionFailed", "Failed to create session");
         setError(message);
         return null;
       } finally {
         setIsLoading(false);
       }
     },
-    [julesFetch, translate]
+    [julesFetch, translate],
   );
 
   // Clear error
