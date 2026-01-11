@@ -17,7 +17,7 @@ import { useApiKey } from "@/constants/api-key-context";
 import { useI18n } from "@/constants/i18n-context";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import "react-native-a";
+import A from "react-native-a";
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
@@ -206,11 +206,11 @@ export default function SettingsScreen() {
         {/* テーマ切り替え */}
         <View style={[styles.section, styles.sectionMargin]}>
           <View style={[styles.switchRow, isDark && styles.switchRowDark]}>
-            <a href="https://github.com/involvex">
+            <A href="https://github.com/involvex">
               <Text style={[styles.label, isDark && styles.labelDark]}>
                 Author: <Text style={{ fontWeight: "700" }}>Involvex</Text>
               </Text>
-            </a>
+            </A>
           </View>
         </View>
         {/* テーマ切り替え */}

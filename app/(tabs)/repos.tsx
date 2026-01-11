@@ -22,9 +22,9 @@ export default function Repos() {
         repo.name,
         `${repo.description || "No description available"}\n\n${repo.html_url}`,
         [
-          { text: t("cancel"), style: "cancel" },
+          { text: ("cancel"), style: "cancel" },
           {
-            text: t("startSession"),
+            text: ("startSession"),
             onPress: () => {
               // TODO: Implement session creation with repository context
               console.log("Starting session for:", repo.full_name);
@@ -33,7 +33,7 @@ export default function Repos() {
         ],
       );
     },
-    [t],
+    [],
   );
 
   // Initialize validation on mount only once
@@ -49,7 +49,7 @@ export default function Repos() {
   if (!isAuthenticated) {
     return (
       <>
-        <Stack.Screen options={{ title: t("repos") }} />
+        <Stack.Screen options={{ title: ("repos") }} />
         <SafeAreaView
           style={[styles.container, isDark && styles.containerDark]}
           edges={["top"]}
@@ -87,7 +87,7 @@ export default function Repos() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t("repos") }} />
+      <Stack.Screen options={{ title: ("repos") }} />
       <SafeAreaView
         style={[styles.container, isDark && styles.containerDark]}
         edges={["top"]}
