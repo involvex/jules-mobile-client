@@ -7,6 +7,10 @@
   "scripts": {
     "android": "expo run:android",
     "build:android": "eas build --platform android --local",
+    "expo:doctor": "bunx expo-doctor",
+    "expo:export": "bunx expo export --dev -c -p android --output-dir dist",
+    "expo:prebuild": "bunx expo prebuild",
+    "expo:start:nocache": "bunx expo start -a --dev -c ",
     "format": "prettier --write .",
     "generate-licenses": "bun scripts/generate-licenses.ts",
     "ios": "expo run:ios",
@@ -28,6 +32,7 @@
     "@react-navigation/native": "^7.1.8",
     "@types/react-syntax-highlighter": "^15.5.13",
     "date-fns": "^4.1.0",
+    "eslint-react": "^0.0.4",
     "expo": "^54.0.31",
     "expo-constants": "~18.0.13",
     "expo-crypto": "15.0.9-canary-20260105-6b962e6",
@@ -64,6 +69,7 @@
     "react-syntax-highlighter": "^16.1.0"
   },
   "devDependencies": {
+    "@eslint-recommended/eslint-config": "^28.0.0",
     "@react-native-community/cli": "^20.1.0",
     "@testing-library/react-native": "^13.3.3",
     "@types/lodash": "^4.17.23",
@@ -80,7 +86,8 @@
     "prettier-plugin-packagejson": "^2.5.20",
     "prettier-plugin-sort-imports": "^1.8.9",
     "tsgolint": "^0.0.1",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.52.0"
   },
   "packageManager": "bun@1.3.5",
   "engineStrict": true,

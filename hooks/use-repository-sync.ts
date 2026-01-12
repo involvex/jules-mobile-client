@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useGithubApi, Repository } from "./use-github-api";
+import { useGitHubService } from "./use-github-service";
 import * as SecureStore from "expo-secure-store";
+import { Repository } from "../services/github";
 import { Alert } from "react-native";
 
 export interface RepositorySyncStatus {
@@ -18,8 +19,8 @@ export interface RepositoryCache {
 }
 
 export function useRepositorySync() {
-  const { getUserRepos, getRepoDetails, isAuthenticated, isLoading } =
-    useGithubApi();
+  const { getUserRepos, getRepo, isAuthenticated, isLoading } =
+    useGitHubService();
   const [syncStatus, setSyncStatus] = useState<RepositorySyncStatus>({
     isSyncing: false,
     lastSync: null,
@@ -128,7 +129,7 @@ export function useRepositorySync() {
         if (!remoteMap.has(id)) {
           // Check if this was a legitimate removal by trying to fetch the repo
           try {
-            await getRepoDetails(localRepo.owner.login, localRepo.name);
+            await getRepo(localRepo.owner.login, localRepo.name);
             // If successful, the repo still exists, keep it
             merged.push(localRepo);
           } catch (error) {
@@ -146,13 +147,13 @@ export function useRepositorySync() {
         return dateB.getTime() - dateA.getTime();
       });
     },
-    [getRepoDetails],
+    [getRepo],
   );
 
   // Main sync function
   const syncRepositories = useCallback(
     async (showAlert = true): Promise<void> => {
-      if (!isAuthenticated || isSyncingRef.current || isLoading) {
+      if (!isAuthenticated || isSyncingRef.current) {
         return;
       }
 
@@ -170,7 +171,7 @@ export function useRepositorySync() {
         setCache(existingCache);
 
         // Fetch fresh data from GitHub
-        const remoteRepos = await getUserRepos(100, 1);
+        const remoteRepos = await getUserRepos({ per_page: 100, page: 1 });
         setSyncStatus(prev => ({ ...prev, progress: 50 }));
 
         // Resolve conflicts if cache exists
@@ -253,7 +254,7 @@ export function useRepositorySync() {
 
       try {
         // Check if repository is still accessible
-        const repoDetails = await getRepoDetails(
+        const repoDetails = await getRepo(
           repository.owner.login,
           repository.name,
         );
@@ -282,7 +283,7 @@ export function useRepositorySync() {
         };
       }
     },
-    [getRepoDetails],
+    [getRepo],
   );
 
   // Offline support - get repositories from cache

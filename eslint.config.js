@@ -1,10 +1,41 @@
-// https://docs.expo.dev/guides/using-eslint/
-const expoConfig = require("eslint-config-expo/flat");
-const { defineConfig } = require("eslint/config");
+import tseslint from "@typescript-eslint/eslint-plugin";
+import expoConfig from "eslint-config-expo/flat.js";
+import tsparser from "@typescript-eslint/parser";
+import eslintreact from "eslint-react";
 
-module.exports = defineConfig([
-  expoConfig,
+export default [
+  ...expoConfig,
   {
-    ignores: ["dist/*", "_tests_/*", "config/*", "dist/*", "node_modules/*"],
+    ignores: ["dist/*", "__tests__/*", "node_modules/*", ".old_components/*"],
   },
-]);
+  {
+    files: ["**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+    rules: {
+      "no-unused-vars": "warn",
+      "no-console": "warn",
+    },
+  },
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        project: "./tsconfig.json",
+      },
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "eslint-react": eslintreact,
+    },
+    rules: {
+      "no-unused-vars": "warn",
+      "no-console": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": ["warn", { ignoreRestArgs: true }],
+    },
+  },
+];

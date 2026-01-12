@@ -18,6 +18,7 @@ import { useI18n } from "@/constants/i18n-context";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import A from "react-native-a";
+import pkg from '../../package.json';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
@@ -212,16 +213,25 @@ export default function SettingsScreen() {
               </Text>
             </A>
           </View>
+          <View style={[styles.switchRow, isDark && styles.switchRowDark]}> 
+            <Text style={[styles.label, isDark && styles.labelDark]}>
+              Version: <Text style={{ fontWeight: "700" }}>{pkg.version}</Text>
+            </Text>
+          </View>
         </View>
         {/* テーマ切り替え */}
         <View style={[styles.section, styles.sectionMargin]}>
           <View style={[styles.switchRow, isDark && styles.switchRowDark]}>
+             <A href="https://github.com/sponsors/involvex">
             <Text style={[styles.label, isDark && styles.labelDark]}>
               Sponsor: <Text style={{ fontWeight: "700" }}>Involvex </Text>
             </Text>
+            </A>
+            <A href="https://paypal.me/involvex">
             <Text style={[styles.label, isDark && styles.labelDark]}>
               Paypal: <Text style={{ fontWeight: "700" }}>Involvex </Text>
             </Text>
+            </A>
           </View>
         </View>
 

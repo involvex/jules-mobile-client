@@ -4,16 +4,17 @@ import React, { useCallback, useEffect } from "react";
 import { Stack } from "expo-router";
 
 import { EnhancedRepositoryManager } from "@/components/github/enhanced-repository-manager";
-import { Repository, useGithubApi } from "@/hooks/use-github-api";
+import { useGitHubService } from "@/hooks/use-github-service";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useI18n } from "@/constants/i18n-context";
+import { Repository } from "@/services/github";
 
 export default function Repos() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { t } = useI18n();
-  const { isAuthenticated, validateToken } = useGithubApi();
+  const { isAuthenticated, validateToken, lastError } = useGitHubService();
 
   const handleRepoPress = useCallback((repo: Repository) => {
     // TODO: Navigate to repository detail or session creation
@@ -98,7 +99,7 @@ export default function Repos() {
             <Text
               style={[styles.headerTitle, isDark && styles.headerTitleDark]}
             >
-              {t("sessions")}
+              {t("repos")}
             </Text>
           </View>
         </View>

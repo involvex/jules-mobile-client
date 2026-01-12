@@ -4,7 +4,7 @@
     "slug": "jules-mobile-client",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "assets/images/icon.png",
     "scheme": "julesmobileclient",
     "userInterfaceStyle": "automatic",
     "jsEngine": "hermes",
@@ -16,9 +16,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "assets/images/android-icon-foreground.png",
+        "backgroundImage": "assets/images/android-icon-background.png",
+        "monochromeImage": "assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
