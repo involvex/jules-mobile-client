@@ -2,7 +2,7 @@
   "expo": {
     "name": "jules-mobile-client",
     "slug": "jules-mobile-client",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "julesmobileclient",
@@ -43,7 +43,9 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

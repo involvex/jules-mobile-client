@@ -13,6 +13,7 @@ export interface Repository {
     login: string;
     avatar_url: string;
   };
+  default_branch: string;
   language?: string;
   stargazers_count: number;
   forks_count: number;

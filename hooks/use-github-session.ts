@@ -2,13 +2,13 @@
 import { Repository } from "./use-github-api";
 import { useJulesApi } from "./use-jules-api";
 import { useCallback, useState } from "react";
-
+import { useGithub } from "@/constants/github-context";
 export interface GithubSessionContext {
   owner: string;
   repo: string;
   branch?: string;
   defaultBranch?: string;
-  repository?: Repository;
+  repository?: Repository | undefined;
 }
 
 export interface SessionCreationOptions {
@@ -92,17 +92,18 @@ export function useGithubSession() {
     async (
       owner: string,
       repo: string,
+      branch: string,
     ): Promise<GithubSessionContext | null> => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const repository = await githubApi.getRepoDetails(owner, repo);
+        const repository = await githubApi.getRepoDetails(owner, repo, branch);
 
         return {
           owner,
           repo,
-          defaultBranch: repository.default_branch || "main",
+          defaultBranch: repository.branch || "main",
           repository,
         };
       } catch (err) {
@@ -192,7 +193,7 @@ export function useGithubSession() {
         }
 
         // Get repository context
-        const context = await getRepositoryContext(urlData.owner, urlData.repo);
+        const context = await getRepositoryContext(urlData.owner, urlData.repo, urlData.branch);
         if (!context) {
           throw new Error("Failed to get repository context");
         }

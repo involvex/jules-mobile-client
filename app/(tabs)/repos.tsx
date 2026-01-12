@@ -15,26 +15,23 @@ export default function Repos() {
   const { t } = useI18n();
   const { isAuthenticated, validateToken } = useGithubApi();
 
-  const handleRepoPress = useCallback(
-    (repo: Repository) => {
-      // TODO: Navigate to repository detail or session creation
-      Alert.alert(
-        repo.name,
-        `${repo.description || "No description available"}\n\n${repo.html_url}`,
-        [
-          { text: ("cancel"), style: "cancel" },
-          {
-            text: ("startSession"),
-            onPress: () => {
-              // TODO: Implement session creation with repository context
-              console.log("Starting session for:", repo.full_name);
-            },
+  const handleRepoPress = useCallback((repo: Repository) => {
+    // TODO: Navigate to repository detail or session creation
+    Alert.alert(
+      repo.name,
+      `${repo.description || "No description available"}\n\n${repo.html_url}`,
+      [
+        { text: "cancel", style: "cancel" },
+        {
+          text: "startSession",
+          onPress: () => {
+            // TODO: Implement session creation with repository context
+            console.log("Starting session for:", repo.full_name);
           },
-        ],
-      );
-    },
-    [],
-  );
+        },
+      ],
+    );
+  }, []);
 
   // Initialize validation on mount only once
   useEffect(() => {
@@ -49,7 +46,7 @@ export default function Repos() {
   if (!isAuthenticated) {
     return (
       <>
-        <Stack.Screen options={{ title: ("repos") }} />
+        <Stack.Screen options={{ title: "repos" }} />
         <SafeAreaView
           style={[styles.container, isDark && styles.containerDark]}
           edges={["top"]}
@@ -87,7 +84,7 @@ export default function Repos() {
 
   return (
     <>
-      <Stack.Screen options={{ title: ("repos") }} />
+      <Stack.Screen options={{ title: "repos" }} />
       <SafeAreaView
         style={[styles.container, isDark && styles.containerDark]}
         edges={["top"]}
