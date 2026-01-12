@@ -15,6 +15,7 @@ export default [
       "assets/*",
       "android/*",
       "ios/*",
+      ".kilocode/*",
     ],
   },
   {

@@ -46,7 +46,7 @@ const LOCAL_MODELS = [
 
 export default function LocalChatScreen() {
   const { colors, isDark } = useTheme();
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -134,12 +134,15 @@ export default function LocalChatScreen() {
             style={styles.messageList}
             contentContainerStyle={styles.messageListContent}
           >
-                      {messages.length === 0 ? (
-                        <View style={styles.emptyContainer}>
-                          <IconSymbol name="cpu" size={64} color={colors.border} />
-                          <ThemedText style={styles.emptyText}>
-                            Chat with local models on your device.
-                          </ThemedText>                <ThemedText style={styles.emptySubText}>
+            {messages.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <IconSymbol name="cpu" size={64} color={colors.border} />
+
+                <ThemedText style={styles.emptyText}>
+                  Chat with local models on your device.
+                </ThemedText>
+
+                <ThemedText style={styles.emptySubText}>
                   No data leaves your device.
                 </ThemedText>
               </View>
@@ -200,9 +203,7 @@ export default function LocalChatScreen() {
               style={[
                 styles.sendButton,
                 {
-                  backgroundColor: inputText.trim()
-                    ? tintColor
-                    : colors.border,
+                  backgroundColor: inputText.trim() ? tintColor : colors.border,
                 },
               ]}
               onPress={handleSend}

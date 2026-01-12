@@ -1,6 +1,6 @@
 {
   "name": "jules-mobile-client",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "private": true,
   "author": "involvex",
   "main": "expo-router/entry",
@@ -23,6 +23,10 @@
     "prebuild": "bun run format && bun run lint:fix && bun run oxc:fix && bun run typecheck",
     "start": "expo start",
     "typecheck": "tsc --noEmit",
+    "version:build": "expo-version-bump",
+    "version:major": "expo-version-bump --major",
+    "version:minor": "expo-version-bump --minor",
+    "version:patch": "expo-version-bump --patch",
     "web": "expo start --web"
   },
   "dependencies": {
@@ -83,6 +87,7 @@
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.39.2",
     "eslint-config-expo": "10.0.1-canary-20260105-6b962e6",
+    "expo-version-bump": "^1.0.2",
     "oxlint": "^1.38.0",
     "oxlint-tsgolint": "^0.11.0",
     "prettier": "^3.7.4",

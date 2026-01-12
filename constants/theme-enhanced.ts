@@ -100,11 +100,11 @@ export interface ThemeSpacing {
 }
 
 export interface ThemeShadows {
-  sm: any;
-  md: any;
-  lg: any;
-  xl: any;
-  "2xl": any;
+  sm: { boxShadow: string; elevation: number };
+  md: { boxShadow: string; elevation: number };
+  lg: { boxShadow: string; elevation: number };
+  xl: { boxShadow: string; elevation: number };
+  "2xl": { boxShadow: string; elevation: number };
 }
 
 export interface ThemeRadius {
@@ -400,32 +400,25 @@ export function useThemeColor(
 }
 
 // Color manipulation utilities
+// Note: These utilities are placeholders and would need a library like 'tinycolor2' for real implementation
 export const colorUtils = {
   // Lighten a color by a percentage
-  lighten: (color: string, percent: number): string => {
-    // Implementation for lightening colors
-    (color as any).lighten(percent / 100);
+  lighten: (color: string, _percent: number): string => {
     return color;
   },
 
   // Darken a color by a percentage
-  darken: (color: string, percent: number): string => {
-    // Implementation for darkening colors
-    (color as any).darken(percent / 100);
+  darken: (color: string, _percent: number): string => {
     return color;
   },
 
   // Get contrast color (black or white)
-  getContrast: (color: string): string => {
-    // Implementation for getting contrast color
-    return (color as any).isLight() ? "#ffffff" : "#000000";
-    // return "#000000";
+  getContrast: (_color: string): string => {
+    return "#000000";
   },
 
   // Opacity for colors
-  withOpacity: (color: string, opacity: number): string => {
-    // Implementation for adding opacity
-    (color as any).alpha(opacity);
+  withOpacity: (color: string, _opacity: number): string => {
     return color;
   },
 };
@@ -483,8 +476,7 @@ export const accessibility = {
   },
 
   // Font scaling
-  getFontSize: (size: keyof ThemeTypography): string | number => {
-    const { typography } = useTheme();
+  getFontSize: (size: keyof ThemeTypography) => {
     return typography[size];
   },
 };
