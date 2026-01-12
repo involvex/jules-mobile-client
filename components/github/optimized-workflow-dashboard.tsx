@@ -4,18 +4,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  PanGestureHandler,
-  State,
   LayoutAnimation,
   UIManager,
   Platform,
+  TextInput,
 } from "react-native";
 import { OptimizedList, SkeletonList } from "@/components/ui/optimized-list";
 import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { PanGestureHandler, State } from "react-native-gesture-handler";
 import { cacheManager, performanceMonitor } from "@/utils/performance";
 import { useWorkflowUpdates } from "@/hooks/use-workflow-updates";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useGithubApi } from "@/hooks/use-github-api";
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android") {
@@ -59,6 +61,8 @@ export function OptimizedWorkflowDashboard({
   const { getWorkflows } = useGithubApi();
   const { startPolling, stopPolling, updates, isPolling } =
     useWorkflowUpdates();
+
+  const textColor = useThemeColor({}, "text");
 
   // Performance optimization: memoize expensive calculations
   const filteredAndSortedWorkflows = useMemo(() => {
@@ -211,12 +215,12 @@ export function OptimizedWorkflowDashboard({
           <Text style={styles.searchLabel}>Search workflows:</Text>
           <View style={styles.searchInputContainer}>
             <Text style={styles.searchIcon}>🔍</Text>
-            <Animated.TextInput
+            <AnimatedTextInput
               style={styles.searchInput}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search by name or path..."
-              placeholderTextColor={useThemeColor({}, "text")}
+              placeholderTextColor={textColor}
             />
           </View>
         </View>
@@ -296,6 +300,7 @@ export function OptimizedWorkflowDashboard({
       handleSortChange,
       handleFilterChange,
       isPolling,
+      textColor,
     ],
   );
 
@@ -351,7 +356,6 @@ interface WorkflowCardProps {
 }
 
 function WorkflowCard({ workflow, onPress, onRun, style }: WorkflowCardProps) {
-  const theme = useThemeColor({}, "text");
   const [isPressed, setIsPressed] = useState(false);
 
   const handlePressIn = () => setIsPressed(true);
@@ -381,13 +385,13 @@ function WorkflowCard({ workflow, onPress, onRun, style }: WorkflowCardProps) {
 
   return (
     <PanGestureHandler
-      onGestureEvent={event => {
+      onGestureEvent={(event: any) => {
         // Handle swipe gestures for quick actions
         if (event.nativeEvent.translationX > 50) {
           onRun();
         }
       }}
-      onHandlerStateChange={event => {
+      onHandlerStateChange={(event: any) => {
         if (event.nativeEvent.state === State.END) {
           onPress();
         }
@@ -546,10 +550,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px 0px rgba(0, 0, 0, 0.1)",
     elevation: 3,
   },
   cardContent: {

@@ -678,7 +678,7 @@ export function NotificationsCenter({
                         },
                       ]}
                     >
-                      Don't disturb during specified hours
+                      Don&apos;t disturb during specified hours
                     </Text>
                   </View>
                   <Switch
@@ -879,10 +879,7 @@ const styles = StyleSheet.create({
     maxHeight: "80%",
     borderRadius: 12,
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    boxShadow: "0px 4px 8px 0px rgba(0, 0, 0, 0.3)",
     elevation: 8,
   },
   header: {
@@ -1006,10 +1003,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    boxShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.1)",
     elevation: 2,
   },
   readNotification: {
@@ -1057,10 +1051,7 @@ const styles = StyleSheet.create({
     maxHeight: "80%",
     borderRadius: 12,
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    boxShadow: "0px 4px 8px 0px rgba(0, 0, 0, 0.3)",
     elevation: 8,
   },
   settingsHeader: {
@@ -1167,10 +1158,7 @@ const styles = StyleSheet.create({
     width: "80%",
     borderRadius: 12,
     padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    boxShadow: "0px 4px 8px 0px rgba(0, 0, 0, 0.3)",
     elevation: 8,
   },
   quietHoursTitle: {

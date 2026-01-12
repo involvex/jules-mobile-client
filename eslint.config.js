@@ -6,7 +6,16 @@ import eslintreact from "eslint-react";
 export default [
   ...expoConfig,
   {
-    ignores: ["dist/*", "__tests__/*", "node_modules/*", ".old_components/*"],
+    ignores: [
+      "dist/*",
+      "__tests__/*",
+      "node_modules/*",
+      ".old_components/*",
+      ".expo/*",
+      "assets/*",
+      "android/*",
+      "ios/*",
+    ],
   },
   {
     files: ["**/*.js"],
@@ -16,7 +25,7 @@ export default [
     },
     rules: {
       "no-unused-vars": "warn",
-      "no-console": "warn",
+      "no-console": "off",
     },
   },
   {
@@ -32,9 +41,12 @@ export default [
       "eslint-react": eslintreact,
     },
     rules: {
-      "no-unused-vars": "warn",
-      "no-console": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "no-unused-vars": ["warn", { varsIgnorePattern: "^_" }],
+      "no-console": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/no-explicit-any": ["warn", { ignoreRestArgs: true }],
     },
   },

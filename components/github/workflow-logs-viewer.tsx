@@ -2,8 +2,8 @@ import {
   atomOneDark,
   atomOneLight,
 } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { SyntaxHighlighter } from "react-native-syntax-highlighter";
 import { useWorkflowUpdates } from "@/hooks/use-workflow-updates";
+import SyntaxHighlighter from "react-native-syntax-highlighter";
 import React, { useCallback, useEffect, useState } from "react";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -32,7 +32,7 @@ export function WorkflowLogsViewer({
   const colorScheme = useColorScheme();
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
+  const cardColor = useThemeColor({}, "background");
 
   // Load logs and run details
   const loadLogs = useCallback(async () => {
@@ -122,9 +122,8 @@ export function WorkflowLogsViewer({
                 fontSize: 12,
               },
             }}
-          >
-            {processedLogs}
-          </SyntaxHighlighter>
+            value={processedLogs}
+          />
         ) : (
           <ThemedText style={[styles.emptyText, { color: textColor }]}>
             No logs available for this run.

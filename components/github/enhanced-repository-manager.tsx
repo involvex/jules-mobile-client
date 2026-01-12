@@ -8,14 +8,15 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { OptimizedList, SkeletonList } from "@/components/ui/optimized-list";
+import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useGithubApi, Repository } from "@/hooks/use-github-api";
 import { useRepositorySync } from "@/hooks/use-repository-sync";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
+import { useI18n } from "@/constants/i18n-context";
 import { formatDistanceToNow } from "date-fns";
 import { Image } from "expo-image";
 
@@ -23,10 +24,92 @@ interface EnhancedRepositoryManagerProps {
   onRepositorySelect?: (repository: Repository) => void;
 }
 
+interface SearchHeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  languageFilter: string | null;
+  setLanguageFilter: (lang: string | null) => void;
+  topicFilter: string | null;
+  setTopicFilter: (topic: string | null) => void;
+  isDark: boolean;
+  t: any;
+}
+
+const SearchHeader = React.memo(({
+  searchQuery,
+  setSearchQuery,
+  languageFilter,
+  setLanguageFilter,
+  topicFilter,
+  setTopicFilter,
+  isDark,
+  t,
+}: SearchHeaderProps) => (
+  <View
+    style={[styles.searchContainer, isDark && styles.searchContainerDark]}
+  >
+    <View style={styles.searchInputContainer}>
+      <IconSymbol
+        name="magnifyingglass"
+        size={16}
+        color={isDark ? "#94a3b8" : "#64748b"}
+      />
+      <TextInput
+        style={[styles.searchInput, isDark && styles.searchInputDark]}
+        placeholder={t("searchRepositories") || "Search repositories..."}
+        placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      {searchQuery.length > 0 && (
+        <TouchableOpacity
+          style={styles.clearSearch}
+          onPress={() => setSearchQuery("")}
+        >
+          <IconSymbol
+            name="xmark.circle.fill"
+            size={16}
+            color={isDark ? "#94a3b8" : "#64748b"}
+          />
+        </TouchableOpacity>
+      )}
+    </View>
+
+    <View style={styles.filtersContainer}>
+      <TouchableOpacity
+        style={[styles.filterButton, isDark && styles.filterButtonDark]}
+        onPress={() =>
+          setLanguageFilter(
+            languageFilter === "TypeScript" ? null : "TypeScript",
+          )
+        }
+      >
+        <ThemedText style={styles.filterButtonText}>
+          {languageFilter === "TypeScript" ? "✓ TypeScript" : "TypeScript"}
+        </ThemedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.filterButton, isDark && styles.filterButtonDark]}
+        onPress={() =>
+          setTopicFilter(topicFilter === "react" ? null : "react")
+        }
+      >
+        <ThemedText style={styles.filterButtonText}>
+          {topicFilter === "react" ? "✓ React" : "React"}
+        </ThemedText>
+      </TouchableOpacity>
+    </View>
+  </View>
+));
+
 export function EnhancedRepositoryManager({
   onRepositorySelect,
 }: EnhancedRepositoryManagerProps) {
   const colorScheme = useColorScheme();
+  const { t } = useI18n();
   const {
     syncStatus,
     cache,
@@ -64,11 +147,14 @@ export function EnhancedRepositoryManager({
 
   // Enhanced repository data with additional details
   const enhancedRepositories = useMemo(() => {
-    return repositories.map(repo => ({
-      ...repo,
-      topics: repoDetails[repo.id]?.topics || repo.topics || [],
-      languages: repoDetails[repo.id]?.languages || repo.languages || {},
-    }));
+    return repositories.map(repo => {
+      const details = (repoDetails && repoDetails[repo.id]) || null;
+      return {
+        ...repo,
+        topics: details?.topics || repo.topics || [],
+        languages: details?.languages || repo.languages || {},
+      };
+    });
   }, [repositories, repoDetails]);
 
   // Filter and search repositories
@@ -85,24 +171,28 @@ export function EnhancedRepositoryManager({
           : true;
 
         // Language filter
+
         const matchesLanguage = languageFilter
           ? repo.language === languageFilter ||
-            Object.keys(repo.languages || {}).includes(languageFilter)
+            (repo.languages &&
+              Object.keys(repo.languages).includes(languageFilter))
           : true;
 
         // Topic filter
+
         const matchesTopic = topicFilter
-          ? (repo.topics || []).includes(topicFilter)
+          ? repo.topics && repo.topics.includes(topicFilter)
           : true;
 
         return matchesSearch && matchesLanguage && matchesTopic;
       })
       .sort((a, b) => {
         // Sort by updated_at if available, otherwise by id
-        if (a.updated_at && b.updated_at) {
-          return (
-            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-          );
+        const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+
+        if (dateA && dateB) {
+          return dateB - dateA;
         }
         return b.id - a.id;
       });
@@ -223,10 +313,10 @@ export function EnhancedRepositoryManager({
     return formatDistanceToNow(date, { addSuffix: true });
   };
 
-  const getStatusIcon = () => {
-    if (syncStatus.isSyncing) return "cloud.upload";
+  const getStatusIcon = (): IconSymbolName => {
+    if (syncStatus.isSyncing) return "arrow.clockwise";
     if (syncStatus.error) return "exclamationmark.triangle";
-    if (syncStatus.lastSync) return "checkmark.circle";
+    if (syncStatus.lastSync) return "checkmark.circle.fill";
     return "cloud";
   };
 
@@ -363,14 +453,15 @@ export function EnhancedRepositoryManager({
                   </View>
                 ) : hasDetails ? (
                   <>
-                    {repoDetails[item.id]?.topics &&
-                      repoDetails[item.id].topics.length > 0 && (
+                    {repoDetails &&
+                      repoDetails[item.id]?.topics &&
+                      repoDetails[item.id]!.topics!.length > 0 && (
                         <View style={styles.detailsSection}>
                           <ThemedText style={styles.sectionTitle}>
                             Topics:
                           </ThemedText>
                           <View style={styles.topicsContainer}>
-                            {repoDetails[item.id].topics.map(topic => (
+                            {repoDetails[item.id]!.topics!.map(topic => (
                               <View
                                 key={topic}
                                 style={[
@@ -387,16 +478,19 @@ export function EnhancedRepositoryManager({
                         </View>
                       )}
 
-                    {repoDetails[item.id]?.languages &&
-                      Object.keys(repoDetails[item.id].languages).length >
+                    {repoDetails &&
+                      repoDetails[item.id]?.languages &&
+                      Object.keys(repoDetails[item.id]!.languages!).length >
                         0 && (
                         <View style={styles.detailsSection}>
                           <ThemedText style={styles.sectionTitle}>
                             Languages:
                           </ThemedText>
                           <View style={styles.languagesContainer}>
-                            {Object.entries(repoDetails[item.id].languages).map(
-                              ([lang, bytes]) => (
+                            {repoDetails[item.id]?.languages &&
+                              Object.entries(
+                                repoDetails[item.id]!.languages!,
+                              ).map(([lang, bytes]) => (
                                 <View key={lang} style={styles.languageItem}>
                                   <View
                                     style={[
@@ -410,8 +504,7 @@ export function EnhancedRepositoryManager({
                                     {lang}: {Math.round(bytes / 1024)} KB
                                   </ThemedText>
                                 </View>
-                              ),
-                            )}
+                              ))}
                           </View>
                         </View>
                       )}
@@ -435,67 +528,6 @@ export function EnhancedRepositoryManager({
       getRepositoryIconColor,
       getLanguageColor,
     ],
-  );
-
-  const renderSearchHeader = () => (
-    <View
-      style={[styles.searchContainer, isDark && styles.searchContainerDark]}
-    >
-      <View style={styles.searchInputContainer}>
-        <IconSymbol
-          name="magnifyingglass"
-          size={16}
-          color={isDark ? "#94a3b8" : "#64748b"}
-        />
-        <TextInput
-          style={[styles.searchInput, isDark && styles.searchInputDark]}
-          placeholder="Search repositories..."
-          placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity
-            style={styles.clearSearch}
-            onPress={() => setSearchQuery("")}
-          >
-            <IconSymbol
-              name="xmark.circle.fill"
-              size={16}
-              color={isDark ? "#94a3b8" : "#64748b"}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.filtersContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, isDark && styles.filterButtonDark]}
-          onPress={() =>
-            setLanguageFilter(
-              languageFilter === "TypeScript" ? null : "TypeScript",
-            )
-          }
-        >
-          <ThemedText style={styles.filterButtonText}>
-            {languageFilter === "TypeScript" ? "✓ TypeScript" : "TypeScript"}
-          </ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.filterButton, isDark && styles.filterButtonDark]}
-          onPress={() =>
-            setTopicFilter(topicFilter === "react" ? null : "react")
-          }
-        >
-          <ThemedText style={styles.filterButtonText}>
-            {topicFilter === "react" ? "✓ React" : "React"}
-          </ThemedText>
-        </TouchableOpacity>
-      </View>
-    </View>
   );
 
   const renderEmptyState = () => (
@@ -673,7 +705,18 @@ export function EnhancedRepositoryManager({
               ? "No repositories match your filters"
               : "No repositories found. Sync to load your repositories."
           }
-          ListHeaderComponent={renderSearchHeader}
+          ListHeaderComponent={
+            <SearchHeader 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              languageFilter={languageFilter}
+              setLanguageFilter={setLanguageFilter}
+              topicFilter={topicFilter}
+              setTopicFilter={setTopicFilter}
+              isDark={isDark}
+              t={t}
+            />
+          }
           ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmptyState}
           estimatedItemSize={150}
@@ -698,10 +741,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   statusCard: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
     elevation: 3,
   },
   repositoriesCard: {

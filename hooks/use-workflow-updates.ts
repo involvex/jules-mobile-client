@@ -15,7 +15,7 @@ export function useWorkflowUpdates() {
     useGithubApi();
   const [updates, setUpdates] = useState<WorkflowUpdate[]>([]);
   const [isPolling, setIsPolling] = useState(false);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<any>(null);
   const lastRunIdsRef = useRef<Map<number, number>>(new Map());
   const lastStatusesRef = useRef<Map<number, string>>(new Map());
 

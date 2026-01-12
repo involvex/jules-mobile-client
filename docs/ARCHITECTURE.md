@@ -52,12 +52,29 @@ Specialized components for Jules functionality:
 - **`DataRenderer`** - Generic JSON/data renderer
 - **`CodeBlock`** - Syntax highlighted code display
 
+#### GitHub Components (`components/github/`)
+
+Components for GitHub integration features:
+
+- **`EnhancedRepositoryManager`** - Advanced repository browsing and management
+- **`GithubSessionCreator`** - Session creation wizard with GitHub context
+- **`GithubUrlHandler`** - URL parsing and deep linking for GitHub URLs
+- **`NotificationsCenter`** - Centralized notification management interface
+- **`OptimizedWorkflowDashboard`** - Performance-optimized workflow monitoring
+- **`PullRequestAnalyzer`** - AI-powered pull request analysis and review
+- **`RepositorySyncManager`** - Background synchronization and conflict resolution
+- **`WebhookManagement`** - Webhook configuration and event handling
+- **`WorkflowCard`**, **`WorkflowDashboard`**, **`WorkflowJobCard`** - Workflow visualization components
+- **`WorkflowRunCard`**, **`WorkflowRunDetails`**, **`WorkflowLogsViewer`** - Workflow execution details
+- **`WorkflowNotifications`** - Workflow status notification system
+
 #### UI Components (`components/ui/`)
 
 Generic, reusable UI components:
 
 - **`IconSymbol`** - Cross-platform icon component (SF Symbols / Material Icons)
 - **`Collapsible`** - Expandable content container
+- **`OptimizedList`** - Performance-optimized list rendering
 
 ### 3. Business Logic Layer (Hooks)
 
@@ -83,6 +100,22 @@ Features:
 - Loading state management
 - Pagination support for sources
 - Silent refresh option
+
+#### GitHub Integration Hooks
+
+Specialized hooks for GitHub functionality:
+
+- **`useGithubApi`** - Core GitHub API integration with Octokit
+- **`useGithubDeepLinking`** - URL parsing and deep linking for GitHub URLs
+- **`useGithubService`** - GitHub service layer abstraction
+- **`useGithubSession`** - Session creation with GitHub repository context
+- **`useGithubWebhooksNative`** - Native webhook event handling
+- **`useGithubWebhooks`** - Webhook management and processing
+- **`useNotifications`** - Push notification system for repository events
+- **`usePullRequestAnalysis`** - AI-powered PR analysis and review
+- **`useRepositoryManager`** - Repository browsing and management
+- **`useRepositorySync`** - Background synchronization with conflict resolution
+- **`useWorkflowUpdates`** - Real-time workflow status monitoring
 
 #### `useSecureStorage`
 
@@ -134,11 +167,32 @@ interface Activity {
 </ApiKeyProvider>
 ```
 
+**GithubContext** - GitHub integration state and configuration
+
+```typescript
+<GithubProvider>
+  {children}
+</GithubProvider>
+```
+
 **I18nContext** - Language state and translation function
 
 ```typescript
 const { language, setLanguage, t } = useI18n();
 ```
+
+### 5. Service Layer
+
+#### GitHub Service (`services/github.ts`)
+
+Centralized service layer for GitHub API operations:
+
+- Repository management (list, search, details)
+- Webhook configuration and event handling
+- Workflow monitoring and log retrieval
+- Pull request analysis and review
+- Authentication and token management
+- Rate limiting and error handling
 
 ## Data Flow
 

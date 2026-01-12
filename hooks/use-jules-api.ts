@@ -277,6 +277,48 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
     [julesFetch, translate],
   );
 
+  // Analyze code (wrapper for creating a specialized session)
+  const analyzeCode = useCallback(
+    async (sourceName: string, code: string): Promise<Session | null> => {
+      const prompt = `Please analyze the following code and provide feedback on quality, security, and performance:\n\n\`\`\`\n${code}\n\`\`\``;
+      return createSession(sourceName, prompt);
+    },
+    [createSession],
+  );
+
+  // Get AI response (send a message to an existing session)
+  const getAiResponse = useCallback(
+    async (sessionName: string, message: string): Promise<Activity | null> => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const body = {
+          prompt: message,
+        };
+
+        const response = await julesFetch<Activity>(
+          `/${sessionName}/activities`,
+          {
+            method: "POST",
+            body: JSON.stringify(body),
+          },
+        );
+
+        return response;
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : translate("apiError", "API Error");
+        setError(message);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [julesFetch, translate],
+  );
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null);
@@ -296,6 +338,8 @@ export function useJulesApi({ apiKey, t }: UseJulesApiOptions) {
     fetchSessions,
     fetchActivities,
     createSession,
+    analyzeCode,
+    getAiResponse,
     approvePlan,
   };
 }

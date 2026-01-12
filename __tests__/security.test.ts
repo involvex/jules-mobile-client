@@ -3,6 +3,7 @@ import { useRepositorySync } from "@/hooks/use-repository-sync";
 import { useSecureStorage } from "@/hooks/use-secure-storage";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useGithubApi } from "@/hooks/use-github-api";
+import * as SecureStore from "expo-secure-store";
 
 // Mock SecureStore
 jest.mock("expo-secure-store", () => ({
@@ -53,7 +54,9 @@ describe("Security Tests", () => {
       const { result } = renderHook(() => useGithubApi());
 
       // Mock expired token response
-      result.current.octokit.rest.users.getAuthenticated.mockRejectedValue({
+      (
+        (result.current as any).octokit as any
+      ).rest.users.getAuthenticated.mockRejectedValue({
         status: 401,
         message: "Bad credentials",
       });
@@ -67,12 +70,10 @@ describe("Security Tests", () => {
 
       // Simulate logout
       await act(async () => {
-        await result.current.clearToken();
+        await (result.current as any).clearToken();
       });
 
-      expect(result.current.deleteItemAsync).toHaveBeenCalledWith(
-        "github_token",
-      );
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("github_token");
     });
   });
 
@@ -164,7 +165,9 @@ describe("Security Tests", () => {
       };
 
       // The hook should sanitize response data
-      const sanitized = result.current.sanitizeApiResponse(maliciousResponse);
+      const sanitized = (result.current as any).sanitizeApiResponse(
+        maliciousResponse,
+      );
       expect(sanitized.data.workflows[0].id).toBe("1");
       expect(sanitized.data.workflows[0].name).toBe("");
       expect(sanitized.data.workflows[0].path).toBe(".github/workflows/");
@@ -183,7 +186,7 @@ describe("Security Tests", () => {
       };
 
       // Should sanitize notification content
-      const sanitized = result.current.sanitizeNotification(
+      const sanitized = (result.current as any).sanitizeNotification(
         maliciousNotification,
       );
       expect(sanitized.title).toBe('alert("xss")');
@@ -220,7 +223,7 @@ describe("Security Tests", () => {
       };
 
       // Data should be encrypted before storage
-      const encrypted = result.current.encryptData(sensitiveData);
+      const encrypted = (result.current as any).encryptData(sensitiveData);
       expect(encrypted).not.toContain("github_token_123");
       expect(encrypted).not.toContain("refresh_token_456");
       expect(encrypted).not.toContain("user_789");
@@ -230,13 +233,13 @@ describe("Security Tests", () => {
       const { result } = renderHook(() => useSecureStorage());
 
       // Mock storage failure
-      result.current.setItemAsync.mockRejectedValue(
-        new Error("Storage failed"),
-      );
+      (result.current as any).setItemAsync = jest
+        .fn()
+        .mockRejectedValue(new Error("Storage failed"));
 
       try {
-        await result.current.storeToken("test-token");
-      } catch (error) {
+        await (result.current as any).storeToken("test-token");
+      } catch (error: any) {
         expect(error.message).toBe("Storage failed");
         // Should not expose sensitive data in error
         expect(error.message).not.toContain("test-token");
@@ -251,13 +254,11 @@ describe("Security Tests", () => {
 
       // Should securely replace old token
       await act(async () => {
-        await result.current.rotateToken(oldToken, newToken);
+        await (result.current as any).rotateToken(oldToken, newToken);
       });
 
-      expect(result.current.deleteItemAsync).toHaveBeenCalledWith(
-        "github_token",
-      );
-      expect(result.current.setItemAsync).toHaveBeenCalledWith(
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("github_token");
+      expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
         "github_token",
         newToken,
       );
@@ -291,7 +292,7 @@ describe("Security Tests", () => {
         },
       };
 
-      const isValid = result.current.validateSSL(mockResponse);
+      const isValid = (result.current as any).validateSSL(mockResponse);
       expect(isValid).toBe(true);
     });
 
@@ -299,7 +300,7 @@ describe("Security Tests", () => {
       const { result } = renderHook(() => useGithubApi());
 
       // API calls should have timeout
-      const timeout = result.current.getApiTimeout();
+      const timeout = (result.current as any).getApiTimeout();
       expect(timeout).toBeGreaterThan(0);
       expect(timeout).toBeLessThan(60000); // Less than 60 seconds
     });
@@ -315,7 +316,7 @@ describe("Security Tests", () => {
         lastActivity: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
       };
 
-      const isExpired = result.current.isSessionExpired(mockSession);
+      const isExpired = (result.current as any).isSessionExpired(mockSession);
       expect(isExpired).toBe(true); // Should be expired after 30 minutes
     });
 
@@ -323,7 +324,7 @@ describe("Security Tests", () => {
       const { result } = renderHook(() => useRepositorySync());
 
       // Session IDs should be random and unpredictable
-      const sessionId = result.current.generateSessionId();
+      const sessionId = (result.current as any).generateSessionId();
       expect(sessionId).toMatch(/^[a-f0-9-]{36}$/); // UUID format
       expect(sessionId).not.toMatch(/^[0-9]+$/); // Not just numbers
     });
@@ -338,7 +339,7 @@ describe("Security Tests", () => {
         },
       };
 
-      const hasCsrf = result.current.hasCsrfProtection(mockRequest);
+      const hasCsrf = (result.current as any).hasCsrfProtection(mockRequest);
       expect(hasCsrf).toBe(true);
     });
   });
@@ -351,7 +352,9 @@ describe("Security Tests", () => {
         "Database connection failed: host=db.example.com;user=admin;password=secret123",
       );
 
-      const sanitizedError = result.current.sanitizeError(sensitiveError);
+      const sanitizedError = (result.current as any).sanitizeError(
+        sensitiveError,
+      );
       expect(sanitizedError.message).not.toContain("admin");
       expect(sanitizedError.message).not.toContain("secret123");
       expect(sanitizedError.message).toContain("Database connection failed");
@@ -431,7 +434,7 @@ describe("Security Tests", () => {
       };
 
       // Old data should be cleaned up
-      const cleanedData = result.current.cleanupOldData(oldData);
+      const cleanedData = (result.current as any).cleanupOldData(oldData);
       expect(cleanedData.repositories).toHaveLength(0);
     });
 
@@ -440,18 +443,14 @@ describe("Security Tests", () => {
 
       // Should be able to delete all user data
       await act(async () => {
-        await result.current.deleteAllUserData();
+        await (result.current as any).deleteAllUserData();
       });
 
-      expect(result.current.deleteItemAsync).toHaveBeenCalledWith(
-        "github_token",
-      );
-      expect(result.current.deleteItemAsync).toHaveBeenCalledWith(
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("github_token");
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
         "user_preferences",
       );
-      expect(result.current.deleteItemAsync).toHaveBeenCalledWith(
-        "session_data",
-      );
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("session_data");
     });
   });
 });

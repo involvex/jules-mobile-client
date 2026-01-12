@@ -63,6 +63,7 @@ describe("useRepositorySync", () => {
           stargazers_count: 10,
           forks_count: 5,
           updated_at: "2023-01-01T00:00:00Z",
+          default_branch: "main",
         },
       ],
       lastUpdated: new Date("2023-01-01T00:00:00Z"),
@@ -94,6 +95,7 @@ describe("useRepositorySync", () => {
         stargazers_count: 10,
         forks_count: 5,
         updated_at: "2023-01-01T00:00:00Z",
+        default_branch: "main",
       },
     ];
 
@@ -146,6 +148,7 @@ describe("useRepositorySync", () => {
           stargazers_count: 10,
           forks_count: 5,
           updated_at: "2023-01-01T00:00:00Z",
+          default_branch: "main",
         },
       ],
       lastUpdated: new Date("2023-01-01T00:00:00Z"),
@@ -163,6 +166,7 @@ describe("useRepositorySync", () => {
         stargazers_count: 15, // Updated
         forks_count: 5,
         updated_at: "2023-01-02T00:00:00Z", // More recent
+        default_branch: "main",
       },
       {
         id: 2,
@@ -175,6 +179,7 @@ describe("useRepositorySync", () => {
         stargazers_count: 20,
         forks_count: 8,
         updated_at: "2023-01-02T00:00:00Z",
+        default_branch: "main",
       },
     ];
 
@@ -206,6 +211,7 @@ describe("useRepositorySync", () => {
       stargazers_count: 10,
       forks_count: 5,
       updated_at: "2023-01-01T00:00:00Z",
+      default_branch: "main",
     };
 
     mockGetRepoDetails.mockResolvedValue(mockRepository);

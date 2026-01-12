@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { GithubSessionCreator } from "@/components/github/github-session-creator";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PresetBrowser, PresetForm } from "@/components/presets";
 import { useHeaderHeight } from "@react-navigation/elements";
 import React, { useEffect, useRef, useState } from "react";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -21,6 +22,7 @@ import { useApiKey } from "@/constants/api-key-context";
 import { useJulesApi } from "@/hooks/use-jules-api";
 import { useI18n } from "@/constants/i18n-context";
 import { router, Stack } from "expo-router";
+import { Preset } from "@/constants/types";
 
 /**
  * シマー効果付きスケルトン
@@ -178,6 +180,9 @@ export default function CreateSessionScreen() {
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showGithubCreator, setShowGithubCreator] = useState(false);
+  const [showPresetBrowser, setShowPresetBrowser] = useState(false);
+  const [showPresetForm, setShowPresetForm] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
 
   const {
     isLoading,
@@ -271,6 +276,34 @@ export default function CreateSessionScreen() {
   // Handle GitHub session creation cancel
   const handleGithubSessionCancel = () => {
     setShowGithubCreator(false);
+  };
+
+  // Handle preset selection
+  const handlePresetSelected = (preset: Preset) => {
+    setSelectedPreset(preset);
+    setShowPresetBrowser(false);
+    setShowPresetForm(true);
+  };
+
+  // Handle preset form submission
+  const handlePresetFormSubmit = (
+    processedPrompt: string,
+    variables: Record<string, any>,
+  ) => {
+    setPrompt(processedPrompt);
+    setShowPresetForm(false);
+    setSelectedPreset(null);
+  };
+
+  // Handle preset browser cancel
+  const handlePresetBrowserCancel = () => {
+    setShowPresetBrowser(false);
+  };
+
+  // Handle preset form cancel
+  const handlePresetFormCancel = () => {
+    setShowPresetForm(false);
+    setSelectedPreset(null);
   };
 
   return (
@@ -447,6 +480,17 @@ export default function CreateSessionScreen() {
               />
             </View>
 
+            {/* Preset Button */}
+            <TouchableOpacity
+              style={[styles.presetButton, styles.secondaryButton]}
+              onPress={() => setShowPresetBrowser(true)}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              <IconSymbol name="text.book.closed" size={20} color="#7c3aed" />
+              <Text style={styles.presetButtonText}>Use Preset</Text>
+            </TouchableOpacity>
+
             {/* GitHub Session Button */}
             <TouchableOpacity
               style={[styles.githubButton, styles.secondaryButton]}
@@ -483,6 +527,27 @@ export default function CreateSessionScreen() {
             onSessionCreated={handleGithubSessionCreated}
             onCancel={handleGithubSessionCancel}
           />
+        )}
+
+        {/* Preset Browser Modal */}
+        {showPresetBrowser && (
+          <View style={StyleSheet.absoluteFill}>
+            <PresetBrowser
+              onPresetSelected={handlePresetSelected}
+              onCancel={handlePresetBrowserCancel}
+            />
+          </View>
+        )}
+
+        {/* Preset Form Modal */}
+        {showPresetForm && selectedPreset && (
+          <View style={StyleSheet.absoluteFill}>
+            <PresetForm
+              preset={selectedPreset}
+              onSubmit={handlePresetFormSubmit}
+              onCancel={handlePresetFormCancel}
+            />
+          </View>
         )}
       </KeyboardAvoidingView>
     </>
@@ -620,18 +685,14 @@ const styles = StyleSheet.create({
   },
   createButton: {
     backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 24,
+    height: 56,
+    borderRadius: 16,
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    shadowColor: "#2563eb",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: "0px 4px 8px 0px rgba(37, 99, 235, 0.2)",
+    elevation: 8,
   },
   createButtonDisabled: {
     backgroundColor: "#94a3b8",
@@ -656,6 +717,35 @@ const styles = StyleSheet.create({
   },
   githubButtonText: {
     color: "#2563eb",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  presetButton: {
+    backgroundColor: "#f3f4f6",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  secondaryButton: {
+    backgroundColor: "#2e3138",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  presetButtonText: {
+    color: "#7c3aed",
     fontSize: 16,
     fontWeight: "700",
   },

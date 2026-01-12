@@ -9,8 +9,19 @@ import {
   RequestMetrics,
   RateLimitInfo,
 } from "../services/github";
+
 import { useCallback, useEffect, useState } from "react";
 import { useApiKey } from "@/constants/api-key-context";
+
+export type {
+  Repository,
+  SearchResults,
+  SearchParams,
+  PaginationParams,
+  GitHubError,
+  RequestMetrics,
+  RateLimitInfo,
+};
 
 export interface UseGitHubServiceReturn {
   // Service instance
@@ -39,6 +50,7 @@ export interface UseGitHubServiceReturn {
   unstarRepo: (owner: string, repo: string) => Promise<void>;
   forkRepo: (owner: string, repo: string) => Promise<Repository>;
   validateToken: () => Promise<boolean>;
+  refreshRepos: () => Promise<Repository[]>;
 
   // Cache management
   clearCache: () => void;
@@ -54,15 +66,9 @@ export function useGitHubService(): UseGitHubServiceReturn {
   const { GITHUB_TOKEN } = useApiKey();
   const [isLoading, setIsLoading] = useState(false);
   const [lastError, setLastError] = useState<GitHubError | null>(null);
+  const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
 
-  // Initialize service when token changes
-  useEffect(() => {
-    if (GITHUB_TOKEN) {
-      githubService.initialize(GITHUB_TOKEN);
-    }
-  }, [GITHUB_TOKEN]);
-
-  // Error handling wrapper
+  // Error handling wrapper - Move to top to avoid hoisting issues
   const handleRequest = useCallback(
     async <T>(operation: () => Promise<T>): Promise<T> => {
       setIsLoading(true);
@@ -74,6 +80,10 @@ export function useGitHubService(): UseGitHubServiceReturn {
       } catch (error: any) {
         const githubError = error as GitHubError;
         setLastError(githubError);
+        // If we get an auth error, mark token as invalid
+        if (githubError.status === 401 || githubError.type === "auth") {
+          setIsTokenValid(false);
+        }
         throw githubError;
       } finally {
         setIsLoading(false);
@@ -81,6 +91,30 @@ export function useGitHubService(): UseGitHubServiceReturn {
     },
     [],
   );
+
+  const validateToken = useCallback(
+    () => handleRequest(() => githubService.validateToken()),
+    [handleRequest],
+  );
+
+  // Initialize service when token changes
+  useEffect(() => {
+    let isMounted = true;
+    if (GITHUB_TOKEN) {
+      githubService.initialize(GITHUB_TOKEN);
+      // Use the raw service method here to avoid the handleRequest/isLoading cycle
+      githubService.validateToken().then(valid => {
+        if (isMounted) {
+          setIsTokenValid(valid);
+        }
+      });
+    } else {
+      setIsTokenValid(false);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [GITHUB_TOKEN]);
 
   // API method wrappers with error handling
   const getUserRepos = useCallback(
@@ -131,8 +165,8 @@ export function useGitHubService(): UseGitHubServiceReturn {
     [handleRequest],
   );
 
-  const validateToken = useCallback(
-    () => handleRequest(() => githubService.validateToken()),
+  const refreshRepos = useCallback(
+    () => handleRequest(() => githubService.getUserRepos()),
     [handleRequest],
   );
 
@@ -142,7 +176,7 @@ export function useGitHubService(): UseGitHubServiceReturn {
 
   return {
     service: githubService,
-    isAuthenticated: githubService.isAuthenticated(),
+    isAuthenticated: !!GITHUB_TOKEN && isTokenValid === true,
     isLoading,
     rateLimit: githubService.getRateLimit(),
     metrics: githubService.getMetrics(),
@@ -155,6 +189,7 @@ export function useGitHubService(): UseGitHubServiceReturn {
     unstarRepo,
     forkRepo,
     validateToken,
+    refreshRepos,
     clearCache,
     lastError,
   };

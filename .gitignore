@@ -44,3 +44,5 @@ app-example
 credentials.json
 *.apk
 .old_components/explore.tsx
+.kilocode
+.old_components/

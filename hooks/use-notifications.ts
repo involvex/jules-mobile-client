@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useGithubWebhooks } from "./use-github-webhooks";
 import * as Notifications from "expo-notifications";
 import { useGithubApi } from "./use-github-api";
+import { storage } from "@/utils/storage";
 import { Platform } from "react-native";
-import * as Device from "expo-device";
 
 export interface NotificationPreferences {
   pushNotifications: boolean;
@@ -25,7 +25,13 @@ export interface Notification {
   id: string;
   title: string;
   body: string;
-  type: "workflow" | "pull_request" | "repository" | "comment" | "mention";
+  type:
+    | "workflow"
+    | "pull_request"
+    | "repository"
+    | "comment"
+    | "mention"
+    | "general";
   data: any;
   timestamp: Date;
   read: boolean;
@@ -41,7 +47,7 @@ export interface NotificationStats {
 }
 
 export function useNotifications() {
-  const { handleEvent } = useGithubWebhooks();
+  const { handleEvent } = useGithubWebhooks() as any;
   const { getPullRequests } = useGithubApi();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     pushNotifications: true,
@@ -65,192 +71,72 @@ export function useNotifications() {
     today: 0,
     thisWeek: 0,
   });
-  const notificationListener = useRef();
-  const responseListener = useRef();
-
-  // Initialize notifications
-  const initializeNotifications = useCallback(async () => {
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-
-    // Request permissions
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== "granted") {
-      console.log("Notification permissions not granted");
-      return;
-    }
-
-    // Get push token
-    const token = await Notifications.getExpoPushTokenAsync();
-    console.log("Push token:", token);
-
-    // Handle incoming notifications
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener(notification => {
-        console.log("Notification received:", notification);
-      });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(response => {
-        console.log("Notification response:", response);
-        handleNotificationAction(response);
-      });
-
-    // Load saved notifications and preferences
-    await loadNotifications();
-    await loadPreferences();
-  }, []);
-
-  // Schedule notification
-  const scheduleNotification = useCallback(
-    async (
-      title: string,
-      body: string,
-      data?: any,
-      priority: "low" | "medium" | "high" = "medium",
-      delay?: number,
-    ) => {
-      if (!preferences.pushNotifications) {
-        return;
-      }
-
-      // Check quiet hours
-      if (isInQuietHours()) {
-        return;
-      }
-
-      const content: Notifications.NotificationContentInput = {
-        title,
-        body,
-        data,
-        priority: getNotificationPriority(priority),
-      };
-
-      if (delay) {
-        await Notifications.scheduleNotificationAsync({
-          content,
-          trigger: { seconds: delay },
-        });
-      } else {
-        await Notifications.presentNotificationAsync(content);
-      }
-
-      // Add to local notifications list
-      const notification: Notification = {
-        id: Date.now().toString(),
-        title,
-        body,
-        type: data?.type || "general",
-        data,
-        timestamp: new Date(),
-        read: false,
-        priority,
-        actionUrl: data?.actionUrl,
-      };
-
-      setNotifications(prev => [notification, ...prev]);
-      updateStats();
-    },
-    [preferences.pushNotifications],
+  const notificationListener = useRef<Notifications.Subscription | undefined>(
+    undefined,
+  );
+  const responseListener = useRef<Notifications.Subscription | undefined>(
+    undefined,
   );
 
-  // Handle GitHub events and create notifications
-  const handleGithubEvent = useCallback(
-    async (eventType: string, data: any) => {
-      const shouldNotify = shouldCreateNotification(eventType, data);
-      if (!shouldNotify) {
-        return;
-      }
+  const updateStats = useCallback(() => {
+    const total = notifications.length;
+    const unreadCount = notifications.filter(n => !n.read).length;
+    const today = notifications.filter(
+      n => new Date(n.timestamp).toDateString() === new Date().toDateString(),
+    ).length;
+    const thisWeek = notifications.filter(
+      n =>
+        new Date(n.timestamp).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).length;
 
-      const notificationData = createNotificationData(eventType, data);
-      if (notificationData) {
-        await scheduleNotification(
-          notificationData.title,
-          notificationData.body,
-          notificationData.data,
-          notificationData.priority,
-        );
-      }
-    },
-    [scheduleNotification],
-  );
-
-  // Handle notification actions
-  const handleNotificationAction = useCallback((response: any) => {
-    const data = response.notification.request.content.data;
-    if (data?.actionUrl) {
-      // Navigate to the action URL
-      console.log("Navigating to:", data.actionUrl);
-    }
-  }, []);
-
-  // Mark notification as read
-  const markAsRead = useCallback((notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n)),
-    );
-    updateStats();
-  }, []);
-
-  // Mark all notifications as read
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    updateStats();
-  }, []);
-
-  // Delete notification
-  const deleteNotification = useCallback((notificationId: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    updateStats();
-  }, []);
-
-  // Clear all notifications
-  const clearAllNotifications = useCallback(() => {
-    setNotifications([]);
-    updateStats();
-  }, []);
-
-  // Update preferences
-  const updatePreferences = useCallback(
-    async (newPreferences: Partial<NotificationPreferences>) => {
-      const updatedPreferences = { ...preferences, ...newPreferences };
-      setPreferences(updatedPreferences);
-
-      // Save to storage
-      await savePreferences(updatedPreferences);
-    },
-    [preferences],
-  );
-
-  // Get notifications by type
-  const getNotificationsByType = useCallback(
-    (type: Notification["type"]) => {
-      return notifications.filter(n => n.type === type);
-    },
-    [notifications],
-  );
-
-  // Get unread notifications
-  const getUnreadNotifications = useCallback(() => {
-    return notifications.filter(n => !n.read);
+    setStats({ total, unread: unreadCount, today, thisWeek });
   }, [notifications]);
 
-  // Get recent notifications
-  const getRecentNotifications = useCallback(
-    (hours: number = 24) => {
-      const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-      return notifications.filter(n => n.timestamp > cutoff);
+  const savePreferences = useCallback(
+    async (prefs: NotificationPreferences) => {
+      try {
+        await storage.setItem(
+          "notification_preferences",
+          JSON.stringify(prefs),
+        );
+      } catch (error) {
+        console.error("Failed to save preferences:", error);
+      }
     },
-    [notifications],
+    [],
   );
 
-  // Helper functions
+  const loadPreferences = useCallback(async () => {
+    try {
+      const saved = await storage.getItem("notification_preferences");
+      if (saved) {
+        setPreferences(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error("Failed to load preferences:", error);
+    }
+  }, []);
+
+  const saveNotifications = useCallback(async () => {
+    try {
+      await storage.setItem("notifications", JSON.stringify(notifications));
+    } catch (error) {
+      console.error("Failed to save notifications:", error);
+    }
+  }, [notifications]);
+
+  const loadNotifications = useCallback(async () => {
+    try {
+      const saved = await storage.getItem("notifications");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setNotifications(parsed);
+      }
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+    }
+  }, []);
+
   const isInQuietHours = useCallback(() => {
     if (!preferences.quietHours.enabled) {
       return false;
@@ -266,16 +152,14 @@ export function useNotifications() {
       .split(":")
       .map(Number);
 
-    const startTotalMinutes = startHours * 60 + startMinutes;
-    const endTotalMinutes = endHours * 60 + endMinutes;
+    const startTotalMinutes = (startHours || 0) * 60 + (startMinutes || 0);
+    const endTotalMinutes = (endHours || 0) * 60 + (endMinutes || 0);
 
     if (startTotalMinutes <= endTotalMinutes) {
-      // Same day range
       return (
         currentMinutes >= startTotalMinutes && currentMinutes <= endTotalMinutes
       );
     } else {
-      // Overnight range
       return (
         currentMinutes >= startTotalMinutes || currentMinutes <= endTotalMinutes
       );
@@ -286,18 +170,82 @@ export function useNotifications() {
     (priority: "low" | "medium" | "high") => {
       switch (priority) {
         case "high":
-          return Notifications.AndroidNotificationPriority.HIGH;
+          return "high" as any; // Using string values since we're providing them to NotificationContentInput
         case "medium":
-          return Notifications.AndroidNotificationPriority.DEFAULT;
+          return "default" as any;
         case "low":
-          return Notifications.AndroidNotificationPriority.LOW;
+          return "low" as any;
+        default:
+          return "default" as any;
       }
     },
     [],
   );
 
+  const handleNotificationAction = useCallback((response: any) => {
+    const data = response.notification.request.content.data;
+    if (data?.actionUrl) {
+      console.log("Navigating to:", data.actionUrl);
+    }
+  }, []);
+
+  const scheduleNotification = useCallback(
+    async (
+      title: string,
+      body: string,
+      data?: any,
+      priority: "low" | "medium" | "high" = "medium",
+      delay?: number,
+    ) => {
+      if (!preferences.pushNotifications) {
+        return;
+      }
+
+      if (isInQuietHours()) {
+        return;
+      }
+
+      const content: Notifications.NotificationContentInput = {
+        title,
+        body,
+        data,
+        priority: getNotificationPriority(priority),
+      };
+
+      if (delay) {
+        await Notifications.scheduleNotificationAsync({
+          content,
+          trigger: {
+            seconds: delay,
+            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          } as any,
+        });
+      } else {
+        await Notifications.scheduleNotificationAsync({
+          content,
+          trigger: null,
+        });
+      }
+
+      const notification: Notification = {
+        id: Date.now().toString(),
+        title,
+        body,
+        type: data?.type || "general",
+        data,
+        timestamp: new Date(),
+        read: false,
+        priority,
+        actionUrl: data?.actionUrl,
+      };
+
+      setNotifications(prev => [notification, ...prev]);
+    },
+    [preferences.pushNotifications, isInQuietHours, getNotificationPriority],
+  );
+
   const shouldCreateNotification = useCallback(
-    (eventType: string, data: any): boolean => {
+    (eventType: string, _data: any): boolean => {
       switch (eventType) {
         case "workflow.completed":
           return preferences.workflowEvents;
@@ -327,123 +275,166 @@ export function useNotifications() {
           title: "Workflow Completed",
           body: `${data.workflow_name} finished with status: ${data.conclusion}`,
           data: { type: "workflow", ...data },
-          priority: data.conclusion === "success" ? "low" : "high",
+          priority: data.conclusion === "success" ? "low" : ("high" as const),
         };
       case "pull_request.opened":
         return {
           title: "New Pull Request",
           body: `${data.user.login} opened PR: ${data.title}`,
           data: { type: "pull_request", ...data },
-          priority: "medium",
+          priority: "medium" as const,
         };
       case "pull_request.closed":
         return {
           title: "Pull Request Closed",
           body: `PR #${data.number} was ${data.state}`,
           data: { type: "pull_request", ...data },
-          priority: "low",
+          priority: "low" as const,
         };
       case "repository.created":
         return {
           title: "Repository Created",
           body: `New repository: ${data.repository.full_name}`,
           data: { type: "repository", ...data },
-          priority: "low",
+          priority: "low" as const,
         };
       case "mention":
         return {
           title: "You were mentioned",
           body: `${data.user.login} mentioned you in ${data.context}`,
           data: { type: "mention", ...data },
-          priority: "high",
+          priority: "high" as const,
         };
       default:
         return null;
     }
   }, []);
 
-  const updateStats = useCallback(() => {
-    const total = notifications.length;
-    const unread = notifications.filter(n => !n.read).length;
-    const today = notifications.filter(
-      n => n.timestamp.toDateString() === new Date().toDateString(),
-    ).length;
-    const thisWeek = notifications.filter(
-      n => n.timestamp.getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
-    ).length;
+  const handleGithubEvent = useCallback(
+    async (eventType: string, data: any) => {
+      const shouldNotify = shouldCreateNotification(eventType, data);
+      if (!shouldNotify) {
+        return;
+      }
 
-    setStats({ total, unread, today, thisWeek });
-  }, [notifications]);
-
-  const savePreferences = useCallback(
-    async (prefs: NotificationPreferences) => {
-      try {
-        await SecureStore.setItemAsync(
-          "notification_preferences",
-          JSON.stringify(prefs),
+      const notificationData = createNotificationData(eventType, data);
+      if (notificationData) {
+        await scheduleNotification(
+          notificationData.title,
+          notificationData.body,
+          notificationData.data,
+          notificationData.priority as "low" | "medium" | "high",
         );
-      } catch (error) {
-        console.error("Failed to save preferences:", error);
       }
     },
-    [],
+    [scheduleNotification, shouldCreateNotification, createNotificationData],
   );
 
-  const loadPreferences = useCallback(async () => {
-    try {
-      const saved = await SecureStore.getItemAsync("notification_preferences");
-      if (saved) {
-        setPreferences(JSON.parse(saved));
-      }
-    } catch (error) {
-      console.error("Failed to load preferences:", error);
+  const initializeNotifications = useCallback(async () => {
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
     }
+
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Notification permissions not granted");
+      return;
+    }
+
+    try {
+      const token = await Notifications.getExpoPushTokenAsync();
+      console.log("Push token:", token);
+    } catch (err) {
+      console.log("Failed to get push token", err);
+    }
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener(notification => {
+        console.log("Notification received:", notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener(response => {
+        console.log("Notification response:", response);
+        handleNotificationAction(response);
+      });
+
+    await loadNotifications();
+    await loadPreferences();
+  }, [loadNotifications, loadPreferences, handleNotificationAction]);
+
+  const markAsRead = useCallback((notificationId: string) => {
+    setNotifications(prev =>
+      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n)),
+    );
   }, []);
 
-  const saveNotifications = useCallback(async () => {
-    try {
-      await SecureStore.setItemAsync(
-        "notifications",
-        JSON.stringify(notifications),
-      );
-    } catch (error) {
-      console.error("Failed to save notifications:", error);
-    }
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, []);
+
+  const deleteNotification = useCallback((notificationId: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  }, []);
+
+  const clearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  const updatePreferences = useCallback(
+    async (newPreferences: Partial<NotificationPreferences>) => {
+      const updatedPreferences = { ...preferences, ...newPreferences };
+      setPreferences(updatedPreferences);
+      await savePreferences(updatedPreferences);
+    },
+    [preferences, savePreferences],
+  );
+
+  const getNotificationsByType = useCallback(
+    (type: Notification["type"]) => {
+      return notifications.filter(n => n.type === type);
+    },
+    [notifications],
+  );
+
+  const getUnreadNotifications = useCallback(() => {
+    return notifications.filter(n => !n.read);
   }, [notifications]);
 
-  const loadNotifications = useCallback(async () => {
-    try {
-      const saved = await SecureStore.getItemAsync("notifications");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setNotifications(parsed);
-        updateStats();
-      }
-    } catch (error) {
-      console.error("Failed to load notifications:", error);
-    }
-  }, [updateStats]);
+  const getUnreadCount = useCallback(() => {
+    return notifications.filter(n => !n.read).length;
+  }, [notifications]);
 
-  // Cleanup
+  const getRecentNotifications = useCallback(
+    (hours: number = 24) => {
+      const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
+      return notifications.filter(n => new Date(n.timestamp) > cutoff);
+    },
+    [notifications],
+  );
+
   useEffect(() => {
-    initializeNotifications();
+    void initializeNotifications();
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current,
-        );
+        notificationListener.current.remove();
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        responseListener.current.remove();
       }
     };
   }, [initializeNotifications]);
 
-  // Save notifications when they change
   useEffect(() => {
-    saveNotifications();
-  }, [notifications, saveNotifications]);
+    void saveNotifications();
+    updateStats();
+  }, [notifications, saveNotifications, updateStats]);
 
   return {
     preferences,
@@ -458,6 +449,7 @@ export function useNotifications() {
     updatePreferences,
     getNotificationsByType,
     getUnreadNotifications,
+    getUnreadCount,
     getRecentNotifications,
   };
 }

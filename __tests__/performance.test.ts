@@ -68,11 +68,11 @@ describe("Performance Tests", () => {
         updated_at: new Date().toISOString(),
       }));
 
-      result.current.octokit.rest.repos.listForAuthenticatedUser.mockResolvedValue(
-        {
-          data: largeRepoList,
-        },
-      );
+      (
+        (result.current as any).octokit as any
+      ).rest.repos.listForAuthenticatedUser.mockResolvedValue({
+        data: largeRepoList,
+      });
 
       const startTime = performance.now();
       const repos = await result.current.getUserRepos();
@@ -110,7 +110,9 @@ describe("Performance Tests", () => {
         updated_at: new Date().toISOString(),
       }));
 
-      result.current.octokit.rest.actions.listWorkflowRuns.mockResolvedValue({
+      (
+        (result.current as any).octokit as any
+      ).rest.actions.listWorkflowRuns.mockResolvedValue({
         data: { workflow_runs: largeWorkflowRuns },
       });
 
@@ -177,13 +179,13 @@ describe("Performance Tests", () => {
       });
 
       // Simulate cache expiration and new data
-      const cache = result.current.cache;
+      const cache = (result.current as any).cache;
       if (cache) {
         cache.lastUpdated = new Date(Date.now() - 25 * 60 * 60 * 1000); // 25 hours ago
       }
 
       // Mock updated data
-      result.current.getUserRepos.mockResolvedValue(updatedRepos);
+      (result.current as any).getUserRepos.mockResolvedValue(updatedRepos);
 
       const startTime = performance.now();
       await act(async () => {
@@ -192,7 +194,7 @@ describe("Performance Tests", () => {
       const endTime = performance.now();
 
       // Should fetch new data due to cache expiration
-      expect(endTime - startTime).beGreaterThan(100); // Should take some time to fetch
+      expect(endTime - startTime).toBeGreaterThan(100); // Should take some time to fetch
     });
   });
 

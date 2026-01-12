@@ -85,7 +85,7 @@ function getRepoUrl(pkg: PackageJson, name: string): string | undefined {
 }
 
 async function generateLicenses() {
-  const projectRoot = join(import.meta.dir, "..");
+  const projectRoot = process.cwd();
   const packageJsonPath = join(projectRoot, "package.json");
   const nodeModulesPath = join(projectRoot, "node_modules");
   const outputPath = join(projectRoot, "assets", "licenses.json");

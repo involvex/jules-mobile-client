@@ -7,10 +7,10 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
+import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
 import { useGithubApi, Repository } from "@/hooks/use-github-api";
 import { useRepositorySync } from "@/hooks/use-repository-sync";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
 import React, { useEffect, useState } from "react";
@@ -89,11 +89,11 @@ export function RepositorySyncManager({
     return formatDistanceToNow(date, { addSuffix: true });
   };
 
-  const getStatusIcon = () => {
-    if (syncStatus.isSyncing) return "cloud.upload";
+  const getStatusIcon = (): IconSymbolName => {
+    if (syncStatus.isSyncing) return "arrow.clockwise";
     if (syncStatus.error) return "exclamationmark.triangle";
-    if (syncStatus.lastSync) return "checkmark.circle";
-    return "cloud";
+    if (syncStatus.lastSync) return "checkmark.circle.fill";
+    return "cloud.fill";
   };
 
   const getStatusColor = () => {
@@ -337,10 +337,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   statusCard: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
     elevation: 3,
   },
   repositoriesCard: {
@@ -457,10 +454,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
     elevation: 2,
   },
   repositoryInfo: {

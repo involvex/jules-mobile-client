@@ -58,7 +58,7 @@ const translations = {
     inputError: "リポジトリを選んで、依頼内容を書いてね！",
     createSuccess: "セッションを作成したよ！",
     processing: "処理中...",
-
+    createGithubSession: "Create GitHub Session",
     // Session States
     stateActive: "処理中",
     stateCompleted: "完了",
@@ -81,6 +81,77 @@ const translations = {
     loadingMore: "さらに読み込み中...",
 
     repos: " リポジトリ",
+
+    // GitHub Session Creator
+    enterGithubUrl: "GitHub URLを入力してね",
+    enterGithubUrlDescription: "解析したいリポジトリのURLを入力してください。",
+    invalidGithubUrl: "無効なGitHub URLだよ",
+    failedToLoadRepository: "リポジトリの読み込みに失敗したよ",
+    enterPrompt: "プロンプトを入力してね",
+    noRepositorySelected: "リポジトリが選択されていないよ",
+    success: "成功",
+    sessionCreatedSuccessfully: "セッションを作成したよ！",
+    failedToCreateSession: "セッションの作成に失敗したよ",
+    pasteUrlFromClipboard: "クリップボードからURLを貼り付けました",
+    info: "情報",
+    next: "次へ",
+    back: "戻る",
+    selectTemplate: "テンプレートを選択",
+    selectTemplateDescription: "タスクに最適なテンプレートを選んでください。",
+    customizePrompt: "プロンプトをカスタマイズ",
+    customizePromptDescription: "Julesへの指示を詳しく教えてください。",
+    enterYourPrompt: "ここに指示を入力...",
+    branch: "ブランチ",
+    confirmSession: "セッションを確認",
+    confirmSessionDescription: "以下の内容でセッションを開始しますか？",
+    repository: "リポジトリ",
+    prompt: "プロンプト",
+    creating: "作成中...",
+    createSession: "セッションを作成",
+
+    // GitHub URL Handler
+    noValidGithubUrl: "有効なGitHub URLが見つからないよ",
+    confirmLaunch: "セッションを開始しますか？",
+    launch: "開始",
+    urlCopiedToClipboard: "URLをクリップボードにコピーしたよ",
+    pullRequest: "プルリクエスト",
+    issue: "イシュー",
+    workflow: "ワークフロー",
+    githubUrlDetected: "GitHub URLを検出したよ",
+    whatWouldYouLikeToDo: "何をしたいですか？",
+    launchJulesSession: "Julesセッションを開始",
+    openInBrowser: "ブラウザで開く",
+    copyUrl: "URLをコピー",
+    repositoryContext: "リポジトリコンテキスト",
+    repositoryContextDescription:
+      "このリポジトリで新しいセッションを開始します。",
+    pullRequestContext: "プルリクエストコンテキスト",
+    pullRequestContextDescription: "このプルリクエストを分析します。",
+    workflowContext: "ワークフローコンテキスト",
+    workflowContextDescription: "このワークフロー実行を確認します。",
+    noGithubUrl: "GitHub URLなし",
+    received: "受信済み",
+    setupInstructions: "セットアップ手順",
+    webhookSetupInstructions:
+      "GitHubリポジリの設定で、ペイロードURLをこのアプリのエンドポイントに、コンテンツタイプをapplication/jsonに設定し、シークレットを入力してください。",
+    enterWebhookSecret: "Webhookシークレットを入力してください",
+    webhookSecretUpdated: "Webhookシークレットを更新しました",
+    webhookTestProcessed: "テストWebhookを処理しました",
+    webhookManagement: "Webhook管理",
+    webhookManagementDescription: "リポジトリのリアルタイム更新を管理します。",
+    webhookStatus: "Webhook状態",
+    enabled: "有効",
+    disabled: "無効",
+    webhookConfiguration: "Webhook設定",
+    webhookSecret: "Webhookシークレット",
+    updateSecret: "シークレットを更新",
+    testWebhook: "Webhookをテスト",
+    trackedEvents: "追跡イベント",
+    pushEvents: "プッシュイベント",
+    pullRequestEvents: "プルリクエストイベント",
+    workflowEvents: "ワークフローイベント",
+    repositoryEvents: "リポジトリイベント",
+    recentEvents: "最近のイベント",
   },
   en: {
     // Common
@@ -98,6 +169,7 @@ const translations = {
     noSessionsHint: "Tap the button below to create a new task!",
     noApiKey: "API key not set",
     noApiKeyHint: "Enter your key in Settings tab!",
+    createGithubSession: "Create GitHub Session",
 
     // Session Detail
     noActivities: "No activities",
@@ -156,6 +228,80 @@ const translations = {
     loadingMore: "Loading more...",
 
     repos: " Repositories",
+
+    // GitHub Session Creator
+    enterGithubUrl: "Enter GitHub URL",
+    enterGithubUrlDescription:
+      "Please enter the URL of the repository you want to analyze.",
+    invalidGithubUrl: "Invalid GitHub URL",
+    failedToLoadRepository: "Failed to load repository",
+    enterPrompt: "Enter prompt",
+    noRepositorySelected: "No repository selected",
+    success: "Success",
+    sessionCreatedSuccessfully: "Session created successfully!",
+    failedToCreateSession: "Failed to create session",
+    pasteUrlFromClipboard: "Pasted URL from clipboard",
+    info: "Info",
+    next: "Next",
+    back: "Back",
+    selectTemplate: "Select Template",
+    selectTemplateDescription: "Choose a template that best fits your task.",
+    customizePrompt: "Customize Prompt",
+    customizePromptDescription: "Provide detailed instructions for Jules.",
+    enterYourPrompt: "Enter your instructions here...",
+    branch: "Branch",
+    confirmSession: "Confirm Session",
+    confirmSessionDescription:
+      "Do you want to start a session with these details?",
+    repository: "Repository",
+    prompt: "Prompt",
+    creating: "Creating...",
+    createSession: "Create Session",
+
+    // GitHub URL Handler
+    noValidGithubUrl: "No valid GitHub URL found",
+    confirmLaunch: "Do you want to start a session?",
+    launch: "Launch",
+    urlCopiedToClipboard: "URL copied to clipboard",
+    pullRequest: "Pull Request",
+    issue: "Issue",
+    workflow: "Workflow",
+    githubUrlDetected: "GitHub URL Detected",
+    whatWouldYouLikeToDo: "What would you like to do?",
+    launchJulesSession: "Launch Jules Session",
+    openInBrowser: "Open in Browser",
+    copyUrl: "Copy URL",
+    repositoryContext: "Repository Context",
+    repositoryContextDescription: "Start a new session with this repository.",
+    pullRequestContext: "Pull Request Context",
+    pullRequestContextDescription: "Analyze this pull request.",
+    workflowContext: "Workflow Context",
+    workflowContextDescription: "Review this workflow run.",
+    noGithubUrl: "No GitHub URL",
+    noGithubUrlDescription: "No valid GitHub URL found in clipboard.",
+    received: "Received",
+    setupInstructions: "Setup Instructions",
+    webhookSetupInstructions:
+      "In your GitHub repository settings, set the Payload URL to this app's endpoint, content type to application/json, and enter the secret.",
+    enterWebhookSecret: "Please enter a webhook secret",
+    webhookSecretUpdated: "Webhook secret updated successfully",
+    webhookTestProcessed: "Test webhook processed",
+    webhookManagement: "Webhook Management",
+    webhookManagementDescription:
+      "Manage real-time updates for your repositories.",
+    webhookStatus: "Webhook Status",
+    enabled: "Enabled",
+    disabled: "Disabled",
+    webhookConfiguration: "Webhook Configuration",
+    webhookSecret: "Webhook Secret",
+    updateSecret: "Update Secret",
+    testWebhook: "Test Webhook",
+    trackedEvents: "Tracked Events",
+    pushEvents: "Push Events",
+    pullRequestEvents: "Pull Request Events",
+    workflowEvents: "Workflow Events",
+    repositoryEvents: "Repository Events",
+    recentEvents: "Recent Events",
   },
 };
 
@@ -171,8 +317,20 @@ export function getLanguage(): Language {
   return currentLanguage;
 }
 
-export function t(key: TranslationKey): string {
-  return translations[currentLanguage][key] || translations.en[key] || key;
+export function t(
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+): string {
+  let translation =
+    translations[currentLanguage][key] || translations.en[key] || key;
+
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      translation = translation.replace(`{${k}}`, String(v));
+    });
+  }
+
+  return translation;
 }
 
 export { translations };

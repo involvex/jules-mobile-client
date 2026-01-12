@@ -15,7 +15,9 @@ jest.mock("expo-notifications", () => ({
   addNotificationResponseReceivedListener: jest.fn(),
   removeNotificationSubscription: jest.fn(),
   scheduleNotificationAsync: jest.fn(),
-  presentNotificationAsync: jest.fn(),
+  SchedulableTriggerInputTypes: {
+    TIME_INTERVAL: "timeInterval",
+  },
 }));
 
 // Mock expo-secure-store
@@ -68,10 +70,14 @@ describe("useNotifications", () => {
     });
     (
       Notifications.addNotificationReceivedListener as jest.Mock
-    ).mockReturnValue({ remove: jest.fn() });
+    ).mockReturnValue({
+      remove: jest.fn(),
+    });
     (
       Notifications.addNotificationResponseReceivedListener as jest.Mock
-    ).mockReturnValue({ remove: jest.fn() });
+    ).mockReturnValue({
+      remove: jest.fn(),
+    });
   });
 
   it("should initialize with default preferences", () => {
@@ -106,12 +112,15 @@ describe("useNotifications", () => {
       );
     });
 
-    expect(Notifications.presentNotificationAsync).toHaveBeenCalledWith({
-      title: "Test Title",
-      body: "Test Body",
-      data: { type: "test" },
-      priority: expect.any(Number),
-    });
+    expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.objectContaining({
+          title: "Test Title",
+          body: "Test Body",
+          data: { type: "test" },
+        }),
+      }),
+    );
     expect(result.current.notifications).toHaveLength(1);
     expect(result.current.notifications[0].title).toBe("Test Title");
   });
@@ -136,7 +145,7 @@ describe("useNotifications", () => {
       });
     });
 
-    expect(Notifications.presentNotificationAsync).not.toHaveBeenCalled();
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
   });
 
   it("should handle GitHub events and create notifications", async () => {

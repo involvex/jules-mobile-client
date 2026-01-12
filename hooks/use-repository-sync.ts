@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGitHubService } from "./use-github-service";
-import * as SecureStore from "expo-secure-store";
 import { Repository } from "../services/github";
+import { storage } from "../utils/storage";
 import { Alert } from "react-native";
 
 export interface RepositorySyncStatus {
@@ -29,7 +29,7 @@ export function useRepositorySync() {
     progress: 0,
   });
   const [cache, setCache] = useState<RepositoryCache | null>(null);
-  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const syncIntervalRef = useRef<any>(null);
   const isSyncingRef = useRef(false);
 
   // Cache management
@@ -38,12 +38,12 @@ export function useRepositorySync() {
 
   const loadCache = useCallback(async (): Promise<RepositoryCache | null> => {
     try {
-      const cachedData = await SecureStore.getItemAsync(CACHE_KEY);
+      const cachedData = await storage.getItem(CACHE_KEY);
       if (cachedData) {
         const parsed = JSON.parse(cachedData);
         return {
           ...parsed,
-          lastUpdated: new Date(parsed.lastUpdated),
+          lastUpdated: new Date(parsed.lastUpdated || Date.now()),
         };
       }
     } catch (error) {
@@ -55,7 +55,7 @@ export function useRepositorySync() {
   const saveCache = useCallback(
     async (data: RepositoryCache): Promise<void> => {
       try {
-        await SecureStore.setItemAsync(CACHE_KEY, JSON.stringify(data));
+        await storage.setItem(CACHE_KEY, JSON.stringify(data));
       } catch (error) {
         console.error("Failed to save cache:", error);
       }
@@ -110,8 +110,8 @@ export function useRepositorySync() {
         if (localRepo) {
           // Conflict: both local and remote have the repository
           // Use the more recently updated one
-          const localDate = new Date(localRepo.updated_at);
-          const remoteDate = new Date(remoteRepo.updated_at);
+          const localDate = new Date(localRepo.updated_at || 0);
+          const remoteDate = new Date(remoteRepo.updated_at || 0);
 
           if (remoteDate > localDate) {
             merged.push(remoteRepo);
@@ -142,8 +142,8 @@ export function useRepositorySync() {
       }
 
       return merged.sort((a, b) => {
-        const dateA = new Date(a.updated_at);
-        const dateB = new Date(b.updated_at);
+        const dateA = new Date(a.updated_at || 0);
+        const dateB = new Date(b.updated_at || 0);
         return dateB.getTime() - dateA.getTime();
       });
     },

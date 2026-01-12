@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 import { useGithubDeepLinkingIntegration } from "@/constants/github-context";
+import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useI18n } from "@/constants/i18n-context";
 import React, { useEffect, useState } from "react";
 
@@ -38,6 +38,7 @@ export function GithubUrlHandler({
 
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const [urlData, setUrlData] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -50,7 +51,7 @@ export function GithubUrlHandler({
         }
       });
     }
-  }, [visible]);
+  }, [visible, parseGithubUrlData]);
 
   const handleUrlChange = async () => {
     try {
@@ -65,23 +66,24 @@ export function GithubUrlHandler({
     }
   };
 
-  const handleLaunchSession = () => {
+  const handleLaunchSession = async () => {
     if (!urlData) {
       Alert.alert(t("error"), t("noValidGithubUrl"));
       return;
     }
 
-    if (urlData.type === "repository") {
-      onLaunchSession(currentUrl);
-    } else {
-      Alert.alert(
-        t("confirmLaunch"),
-        t("launchSessionForType", { type: urlData.type }),
-        [
+    try {
+      setIsProcessing(true);
+      if (urlData.type === "repository") {
+        await onLaunchSession(currentUrl);
+      } else {
+        Alert.alert(t("confirmLaunch"), t("launchJulesSession"), [
           { text: t("cancel"), style: "cancel" },
           { text: t("launch"), onPress: () => onLaunchSession(currentUrl) },
-        ],
-      );
+        ]);
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -96,7 +98,11 @@ export function GithubUrlHandler({
     Alert.alert(t("info"), t("urlCopiedToClipboard"));
   };
 
-  const getDisplayInfo = () => {
+  const getDisplayInfo = (): {
+    title: string;
+    subtitle: string;
+    icon: IconSymbolName;
+  } | null => {
     if (!urlData) return null;
 
     switch (urlData.type) {
@@ -128,7 +134,7 @@ export function GithubUrlHandler({
         };
       default:
         return {
-          title: t("unknown"),
+          title: t("error"),
           subtitle: currentUrl,
           icon: "questionmark",
         };
@@ -343,7 +349,7 @@ export function GithubUrlHandler({
                   isDark && styles.emptySubtitleDark,
                 ]}
               >
-                {t("noGithubUrlDescription")}
+                {t("noSourcesFound")}
               </Text>
             </View>
           )}

@@ -100,7 +100,7 @@ For detailed information about GitHub integration, see [GitHub Integration Guide
 
 ```bash
 # Clone the repository
-git clone https://github.com/linkalls/jules-mobile-client.git
+git clone https://github.com/Involvex/jules-mobile-client.git
 cd jules-mobile-client
 
 # Install dependencies (using bun - recommended)
@@ -160,28 +160,91 @@ bun reset-project  # Reset to clean state
 
 ```
 jules-mobile-client/
-├── app/                    # Expo Router screens
-│   ├── (tabs)/            # Tab navigation screens
-│   │   ├── index.tsx      # Sessions list
-│   │   └── settings.tsx   # Settings screen
-│   ├── session/[id].tsx   # Session detail/chat
-│   ├── create-session.tsx # New task creation
-│   └── _layout.tsx        # Root layout
+├── app/                          # Expo Router screens
+│   ├── (tabs)/                  # Tab navigation screens
+│   │   ├── index.tsx            # Sessions list
+│   │   ├── repos.tsx            # GitHub repositories
+│   │   └── settings.tsx         # Settings screen
+│   ├── session/                 # Session management
+│   │   └── [id].tsx             # Session detail/chat
+│   ├── create-session.tsx       # New task creation
+│   ├── licenses.tsx             # License information
+│   ├── modal.tsx                # Modal components
+│   └── _layout.tsx              # Root layout
 ├── components/
-│   ├── jules/             # Jules-specific components
-│   │   ├── activity-item.tsx  # Chat bubbles + ActivityItemSkeleton
-│   │   ├── session-card.tsx   # Session cards + SessionCardSkeleton
+│   ├── github/                  # GitHub integration components
+│   │   ├── enhanced-repository-manager.tsx
+│   │   ├── github-session-creator.tsx
+│   │   ├── github-url-handler.tsx
+│   │   ├── notifications-center.tsx
+│   │   ├── optimized-workflow-dashboard.tsx
+│   │   ├── pull-request-analyzer.tsx
+│   │   ├── repository-sync-manager.tsx
+│   │   ├── webhook-management.tsx
+│   │   ├── workflow-card.tsx
+│   │   ├── workflow-dashboard.tsx
+│   │   ├── workflow-job-card.tsx
+│   │   ├── workflow-run-card.tsx
+│   │   ├── workflow-run-details.tsx
+│   │   ├── workflow-logs-viewer.tsx
+│   │   └── workflow-notifications.tsx
+│   ├── jules/                   # Jules-specific components
+│   │   ├── activity-item.tsx    # Chat bubbles + ActivityItemSkeleton
+│   │   ├── session-card.tsx     # Session cards + SessionCardSkeleton
 │   │   ├── loading-overlay.tsx
-│   │   └── code-block.tsx     # Syntax highlighted code
-│   └── ui/                # Generic UI components
+│   │   ├── code-block.tsx       # Syntax highlighted code
+│   │   └── data-renderer.tsx    # Data visualization
+│   └── ui/                      # Generic UI components
+│       ├── collapsible.tsx
+│       ├── icon-symbol.ios.tsx
+│       ├── icon-symbol.tsx
+│       └── optimized-list.tsx
 ├── constants/
-│   ├── types.ts           # TypeScript types
-│   ├── i18n.ts            # Translations
-│   └── theme.ts           # Color schemes
+│   ├── api-key-context.tsx      # API key management
+│   ├── github-context.tsx       # GitHub integration context
+│   ├── i18n-context.tsx         # Internationalization context
+│   ├── i18n.ts                  # Translations
+│   ├── theme-enhanced.ts        # Enhanced theming
+│   ├── theme.ts                 # Color schemes
+│   └── types.ts                 # TypeScript types
+├── credentials/
+│   └── android/                 # Android credentials
+├── docs/                        # Documentation
 ├── hooks/
-│   ├── use-jules-api.ts   # Jules API hook
-│   └── use-secure-storage.ts
-└── docs/                  # Documentation
+│   ├── use-color-scheme.ts
+│   ├── use-color-scheme.web.ts
+│   ├── use-github-api.ts        # GitHub API integration
+│   ├── use-github-deep-linking.ts
+│   ├── use-github-service.ts
+│   ├── use-github-session.ts
+│   ├── use-github-webhooks-native.ts
+│   ├── use-github-webhooks.ts
+│   ├── use-jules-api.ts         # Jules API hook
+│   ├── use-notifications.ts
+│   ├── use-pull-request-analysis.ts
+│   ├── use-repository-manager.ts
+│   ├── use-repository-sync.ts
+│   ├── use-secure-storage.ts
+│   ├── use-theme-color.ts
+│   └── use-workflow-updates.ts
+├── services/
+│   └── github.ts                # GitHub service layer
+├── utils/
+│   ├── enhanced-cache.ts
+│   └── performance.ts
+├── __tests__/                   # Test suite
+│   ├── accessibility.test.tsx
+│   ├── e2e.test.tsx
+│   ├── github-integration.test.ts
+│   ├── github-repos-integration.test.tsx
+│   ├── github-webhooks-native.test.ts
+│   ├── notifications.test.ts
+│   ├── performance.test.ts
+│   ├── pull-request-analysis.test.ts
+│   ├── repository-sync.test.ts
+│   ├── security.test.ts
+│   └── workflow-integration.test.ts
+└── assets/                      # Static assets
 ```
 
 ## 🔌 Jules API Integration
@@ -236,11 +299,62 @@ eas build --platform ios --profile production
 
 Contributions are welcome! Please read our contributing guidelines before submitting a PR.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Development Workflow
+
+1. **Fork the repository** on GitHub to your account
+2. **Clone your fork** locally:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/jules-mobile-client.git
+   cd jules-mobile-client
+   ```
+3. **Set up upstream remote** to stay updated with the main repository:
+   ```bash
+   git remote add upstream https://github.com/Involvex/jules-mobile-client.git
+   ```
+4. **Create a feature branch** for your changes:
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or for bug fixes
+   git checkout -b fix/issue-description
+   ```
+5. **Make your changes** and ensure they follow the project's coding standards
+6. **Run tests** to verify your changes:
+   ```bash
+   bun test
+   ```
+7. **Commit your changes** with descriptive messages:
+   ```bash
+   git add .
+   git commit -m "Add: brief description of your feature"
+   ```
+8. **Push to your fork**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+9. **Create a Pull Request** to the main repository (`Involvex/jules-mobile-client`)
+
+### Staying Updated
+
+To keep your fork in sync with the upstream repository:
+
+```bash
+# Fetch upstream changes
+git fetch upstream
+
+# Merge upstream changes into your main branch
+git checkout main
+git merge upstream/main
+
+# Push updates to your fork
+git push origin main
+```
+
+### Code Quality
+
+- Follow TypeScript best practices
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
 
 ## 📄 License
 
@@ -254,6 +368,19 @@ This project is licensed under the BSD 2-Clause License - see the [LICENSE](LICE
 
 ---
 
+## Support the Project
+
+If you find this project helpful, consider supporting its development! You can sponsor the maintainer through various platforms:
+
+- **GitHub Sponsors**: [Sponsor Involvex](https://github.com/sponsors/involvex)
+- **Buy Me a Coffee**: [Support on Buy Me a Coffee](https://buymeacoffee.com/involvex)
+- **PayPal**: [Donate via PayPal](https://paypal.me/involvex)
+- **Bing Rewards**: [Earn and donate points](https://rewards.bing.com/welcome?rh=14525F68&ref=rafsrchae&form=ML2XE3&OCID=ML2XE3&PUBL=RewardsDO&CREA=ML2XE3)
+
+For more funding options, see our [FUNDING.yml](.github/FUNDING.yml) file.
+
+---
+
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/linkalls">linkalls</a>
+  Made with ❤️ by <a href="https://github.com/Involvex">Involvex</a>
 </p>

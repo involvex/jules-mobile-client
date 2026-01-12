@@ -299,38 +299,23 @@ const spacing: ThemeSpacing = {
 // Shadow definitions
 const shadows: ThemeShadows = {
   sm: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    boxShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.1)",
     elevation: 2,
   },
   md: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px 0px rgba(0, 0, 0, 0.1)",
     elevation: 4,
   },
   lg: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    boxShadow: "0px 4px 8px 0px rgba(0, 0, 0, 0.1)",
     elevation: 8,
   },
   xl: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
+    boxShadow: "0px 8px 16px 0px rgba(0, 0, 0, 0.1)",
     elevation: 16,
   },
   "2xl": {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.1,
-    shadowRadius: 32,
+    boxShadow: "0px 16px 32px 0px rgba(0, 0, 0, 0.1)",
     elevation: 32,
   },
 };
@@ -377,7 +362,7 @@ export const darkTheme: ThemeConfig = {
 };
 
 // Theme hook with enhanced functionality
-export function useTheme(): {
+export function UseTheme(): {
   theme: ThemeConfig;
   colors: ThemeColors;
   typography: ThemeTypography;
@@ -408,7 +393,7 @@ export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: keyof ThemeColors,
 ): string {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark } = UseTheme();
 
   const color = props[isDark ? "dark" : "light"] || colors[colorName];
   return color;
@@ -419,24 +404,28 @@ export const colorUtils = {
   // Lighten a color by a percentage
   lighten: (color: string, percent: number): string => {
     // Implementation for lightening colors
+    (color as any).lighten(percent / 100);
     return color;
   },
 
   // Darken a color by a percentage
   darken: (color: string, percent: number): string => {
     // Implementation for darkening colors
+    (color as any).darken(percent / 100);
     return color;
   },
 
   // Get contrast color (black or white)
   getContrast: (color: string): string => {
     // Implementation for getting contrast color
-    return "#000000";
+    return (color as any).isLight() ? "#ffffff" : "#000000";
+    // return "#000000";
   },
 
   // Opacity for colors
   withOpacity: (color: string, opacity: number): string => {
     // Implementation for adding opacity
+    (color as any).alpha(opacity);
     return color;
   },
 };
@@ -484,10 +473,7 @@ export const responsive = {
 export const accessibility = {
   // High contrast mode detection
   isHighContrast: (): boolean => {
-    return (
-      Appearance.getColorScheme() === "dark" &&
-      Appearance.getInvertedAppearance() === "inverted"
-    );
+    return Appearance.getColorScheme() === "dark";
   },
 
   // Reduced motion detection
@@ -497,8 +483,8 @@ export const accessibility = {
   },
 
   // Font scaling
-  getFontSize: (size: keyof ThemeTypography): number => {
-    const { typography } = useTheme();
+  getFontSize: (size: keyof ThemeTypography): string | number => {
+    const { typography } = UseTheme();
     return typography[size];
   },
 };

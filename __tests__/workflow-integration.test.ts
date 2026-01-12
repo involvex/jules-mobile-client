@@ -46,7 +46,7 @@ describe("Workflow Integration", () => {
       ];
 
       // Mock the Octokit response
-      const mockOctokit = result.current.octokit;
+      const mockOctokit = result.current.octokit as any;
       mockOctokit.rest.actions.listRepoWorkflows.mockResolvedValue({
         data: { workflows: mockWorkflows },
       });
@@ -82,7 +82,7 @@ describe("Workflow Integration", () => {
         },
       ];
 
-      const mockOctokit = result.current.octokit;
+      const mockOctokit = result.current.octokit as any;
       mockOctokit.rest.actions.listWorkflowRuns.mockResolvedValue({
         data: { workflow_runs: mockRuns },
       });
@@ -105,7 +105,7 @@ describe("Workflow Integration", () => {
       const mockLogs =
         "Step 1: Running tests\n✓ Tests passed\nStep 2: Building\n✓ Build successful";
 
-      const mockOctokit = result.current.octokit;
+      const mockOctokit = result.current.octokit as any;
       mockOctokit.rest.actions.downloadWorkflowRunLogs.mockResolvedValue({
         data: Buffer.from(mockLogs),
       });
@@ -170,7 +170,7 @@ describe("Workflow Integration", () => {
     it("should handle API errors gracefully", async () => {
       const { result } = renderHook(() => useGithubApi());
 
-      const mockOctokit = result.current.octokit;
+      const mockOctokit = result.current.octokit as any;
       mockOctokit.rest.actions.listRepoWorkflows.mockRejectedValue(
         new Error("API Error"),
       );

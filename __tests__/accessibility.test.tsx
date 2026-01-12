@@ -4,13 +4,13 @@ import {
   waitFor,
   screen,
 } from "@testing-library/react-native";
-import RepositorySyncManager from "@/components/github/repository-sync-manager";
-import GithubSessionCreator from "@/components/github/github-session-creator";
-import PullRequestAnalyzer from "@/components/github/pull-request-analyzer";
-import NotificationsCenter from "@/components/github/notifications-center";
-import WorkflowRunDetails from "@/components/github/workflow-run-details";
-import WorkflowLogsViewer from "@/components/github/workflow-logs-viewer";
-import WorkflowDashboard from "@/components/github/workflow-dashboard";
+import { RepositorySyncManager } from "@/components/github/repository-sync-manager";
+import { GithubSessionCreator } from "@/components/github/github-session-creator";
+import { PullRequestAnalyzer } from "@/components/github/pull-request-analyzer";
+import { NotificationsCenter } from "@/components/github/notifications-center";
+import { WorkflowRunDetails } from "@/components/github/workflow-run-details";
+import { WorkflowLogsViewer } from "@/components/github/workflow-logs-viewer";
+import { WorkflowDashboard } from "@/components/github/workflow-dashboard";
 import { NavigationContainer } from "@react-navigation/native";
 import { Text, View } from "react-native";
 
@@ -29,24 +29,26 @@ jest.mock("react-native", () => {
 });
 
 describe("Accessibility Tests", () => {
+  const mockWorkflows = [
+    {
+      id: 1,
+      name: "CI/CD Pipeline",
+      path: ".github/workflows/ci.yml",
+      state: "active",
+      created_at: "2023-01-01T00:00:00Z",
+      updated_at: "2023-01-01T00:00:00Z",
+    },
+  ];
+
   describe("Workflow Dashboard", () => {
     it("should have proper ARIA labels for workflow cards", () => {
-      const mockWorkflows = [
-        {
-          id: 1,
-          name: "CI/CD Pipeline",
-          path: ".github/workflows/ci.yml",
-          state: "active",
-          created_at: "2023-01-01T00:00:00Z",
-          updated_at: "2023-01-01T00:00:00Z",
-        },
-      ];
-
       render(
         <WorkflowDashboard
-          workflows={mockWorkflows}
-          onWorkflowSelect={() => {}}
-          onWorkflowRun={() => {}}
+          {...({
+            workflows: mockWorkflows,
+            onWorkflowSelect: () => {},
+            onWorkflowRun: () => {},
+          } as any)}
         />,
       );
 
@@ -71,9 +73,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowDashboard
-          workflows={mockWorkflows}
-          onWorkflowSelect={() => {}}
-          onWorkflowRun={() => {}}
+          {...({
+            workflows: mockWorkflows,
+            onWorkflowSelect: () => {},
+            onWorkflowRun: () => {},
+          } as any)}
         />,
       );
 
@@ -98,9 +102,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowDashboard
-          workflows={mockWorkflows}
-          onWorkflowSelect={() => {}}
-          onWorkflowRun={() => {}}
+          {...({
+            workflows: mockWorkflows,
+            onWorkflowSelect: () => {},
+            onWorkflowRun: () => {},
+          } as any)}
         />,
       );
 
@@ -123,9 +129,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowLogsViewer
-          logs={mockLogs}
-          workflowRun={mockRun}
-          onClose={() => {}}
+          {...({
+            logs: mockLogs,
+            workflowRun: mockRun,
+            onClose: () => {},
+          } as any)}
         />,
       );
 
@@ -141,9 +149,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowLogsViewer
-          logs=""
-          workflowRun={{ id: 1, name: "Test Run", status: "in_progress" }}
-          onClose={() => {}}
+          {...({
+            logs: "",
+            workflowRun: { id: 1, name: "Test Run", status: "in_progress" },
+            onClose: () => {},
+          } as any)}
         />,
       );
 
@@ -159,9 +169,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowLogsViewer
-          logs={mockLogs}
-          workflowRun={{ id: 1, name: "Test Run", status: "failed" }}
-          onClose={() => {}}
+          {...({
+            logs: mockLogs,
+            workflowRun: { id: 1, name: "Test Run", status: "failed" },
+            onClose: () => {},
+          } as any)}
         />,
       );
 
@@ -187,9 +199,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <PullRequestAnalyzer
-          analysis={mockAnalysis}
-          onRetry={() => {}}
-          onExport={() => {}}
+          {...({
+            analysis: mockAnalysis,
+            onRetry: () => {},
+            onExport: () => {},
+          } as any)}
         />,
       );
 
@@ -211,9 +225,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <PullRequestAnalyzer
-          analysis={null}
-          onRetry={() => {}}
-          onExport={() => {}}
+          {...({
+            analysis: null,
+            onRetry: () => {},
+            onExport: () => {},
+          } as any)}
         />,
       );
 
@@ -243,9 +259,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <PullRequestAnalyzer
-          analysis={mockAnalysis}
-          onRetry={() => {}}
-          onExport={() => {}}
+          {...({
+            analysis: mockAnalysis,
+            onRetry: () => {},
+            onExport: () => {},
+          } as any)}
         />,
       );
 
@@ -271,9 +289,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <RepositorySyncManager
-          syncStatus={mockSyncStatus}
-          onSync={() => {}}
-          onSettings={() => {}}
+          {...({
+            syncStatus: mockSyncStatus,
+            onSync: () => {},
+            onSettings: () => {},
+          } as any)}
         />,
       );
 
@@ -291,15 +311,17 @@ describe("Accessibility Tests", () => {
 
       render(
         <RepositorySyncManager
-          syncStatus={{
-            isSyncing: false,
-            lastSync: null,
-            nextSync: null,
-            error: null,
-            progress: 0,
-          }}
-          onSync={() => {}}
-          onSettings={() => {}}
+          {...({
+            syncStatus: {
+              isSyncing: false,
+              lastSync: null,
+              nextSync: null,
+              error: null,
+              progress: 0,
+            },
+            onSync: () => {},
+            onSettings: () => {},
+          } as any)}
         />,
       );
 
@@ -326,9 +348,11 @@ describe("Accessibility Tests", () => {
 
       render(
         <RepositorySyncManager
-          syncStatus={mockSyncStatus}
-          onSync={() => {}}
-          onSettings={() => {}}
+          {...({
+            syncStatus: mockSyncStatus,
+            onSync: () => {},
+            onSettings: () => {},
+          } as any)}
         />,
       );
 
@@ -357,10 +381,12 @@ describe("Accessibility Tests", () => {
 
       render(
         <NotificationsCenter
-          notifications={mockNotifications}
-          onMarkAsRead={() => {}}
-          onClearAll={() => {}}
-          onSettings={() => {}}
+          {...({
+            notifications: mockNotifications,
+            onMarkAsRead: () => {},
+            onClearAll: () => {},
+            onSettings: () => {},
+          } as any)}
         />,
       );
 
@@ -380,10 +406,12 @@ describe("Accessibility Tests", () => {
 
       render(
         <NotificationsCenter
-          notifications={[]}
-          onMarkAsRead={() => {}}
-          onClearAll={() => {}}
-          onSettings={() => {}}
+          {...({
+            notifications: [],
+            onMarkAsRead: () => {},
+            onClearAll: () => {},
+            onSettings: () => {},
+          } as any)}
         />,
       );
 
@@ -410,10 +438,12 @@ describe("Accessibility Tests", () => {
 
       render(
         <NotificationsCenter
-          notifications={mockNotifications}
-          onMarkAsRead={() => {}}
-          onClearAll={() => {}}
-          onSettings={() => {}}
+          {...({
+            notifications: mockNotifications,
+            onMarkAsRead: () => {},
+            onClearAll: () => {},
+            onSettings: () => {},
+          } as any)}
         />,
       );
 
@@ -429,7 +459,9 @@ describe("Accessibility Tests", () => {
   describe("GitHub Session Creator", () => {
     it("should have proper labels for form fields", () => {
       render(
-        <GithubSessionCreator onSessionCreate={() => {}} onCancel={() => {}} />,
+        <GithubSessionCreator
+          {...({ onSessionCreate: () => {}, onCancel: () => {} } as any)}
+        />,
       );
 
       const repoInput = screen.getByPlaceholderText("Select repository");
@@ -447,7 +479,9 @@ describe("Accessibility Tests", () => {
       const { AccessibilityInfo } = require("react-native");
 
       render(
-        <GithubSessionCreator onSessionCreate={() => {}} onCancel={() => {}} />,
+        <GithubSessionCreator
+          {...({ onSessionCreate: () => {}, onCancel: () => {} } as any)}
+        />,
       );
 
       // Submit empty form
@@ -465,7 +499,9 @@ describe("Accessibility Tests", () => {
 
     it("should support keyboard navigation through form", () => {
       render(
-        <GithubSessionCreator onSessionCreate={() => {}} onCancel={() => {}} />,
+        <GithubSessionCreator
+          {...({ onSessionCreate: () => {}, onCancel: () => {} } as any)}
+        />,
       );
 
       const repoInput = screen.getByPlaceholderText("Select repository");
@@ -495,10 +531,12 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowRunDetails
-          workflowRun={mockRun}
-          onLogsView={() => {}}
-          onRetry={() => {}}
-          onClose={() => {}}
+          {...({
+            workflowRun: mockRun,
+            onLogsView: () => {},
+            onRetry: () => {},
+            onClose: () => {},
+          } as any)}
         />,
       );
 
@@ -520,15 +558,17 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowRunDetails
-          workflowRun={{
-            id: 1,
-            name: "Test Run",
-            status: "in_progress",
-            conclusion: null,
-          }}
-          onLogsView={() => {}}
-          onRetry={() => {}}
-          onClose={() => {}}
+          {...({
+            workflowRun: {
+              id: 1,
+              name: "Test Run",
+              status: "in_progress",
+              conclusion: null,
+            },
+            onLogsView: () => {},
+            onRetry: () => {},
+            onClose: () => {},
+          } as any)}
         />,
       );
 
@@ -549,10 +589,12 @@ describe("Accessibility Tests", () => {
 
       render(
         <WorkflowRunDetails
-          workflowRun={mockRun}
-          onLogsView={() => {}}
-          onRetry={() => {}}
-          onClose={() => {}}
+          {...({
+            workflowRun: mockRun,
+            onLogsView: () => {},
+            onRetry: () => {},
+            onClose: () => {},
+          } as any)}
         />,
       );
 
@@ -591,8 +633,8 @@ describe("Accessibility Tests", () => {
       Appearance.getColorScheme = jest.fn().mockReturnValue("dark");
 
       render(
-        <View style={{ backgroundColor: "#000", color: "#fff" }}>
-          <Text>High contrast text</Text>
+        <View style={{ backgroundColor: "#000" } as any}>
+          <Text style={{ color: "#fff" }}>High contrast text</Text>
         </View>,
       );
 

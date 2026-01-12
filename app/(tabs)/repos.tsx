@@ -1,7 +1,15 @@
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Animated,
+  Easing,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert, StyleSheet, Text, View } from "react-native";
-import React, { useCallback, useEffect } from "react";
-import { Stack } from "expo-router";
+import React, { useCallback, useEffect, useRef } from "react";
+import { Stack, useRouter } from "expo-router";
 
 import { EnhancedRepositoryManager } from "@/components/github/enhanced-repository-manager";
 import { useGitHubService } from "@/hooks/use-github-service";
@@ -14,25 +22,58 @@ export default function Repos() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { t } = useI18n();
-  const { isAuthenticated, validateToken, lastError } = useGitHubService();
+  const router = useRouter();
+  const { isAuthenticated, validateToken, refreshRepos, isLoading } =
+    useGitHubService();
 
-  const handleRepoPress = useCallback((repo: Repository) => {
-    // TODO: Navigate to repository detail or session creation
-    Alert.alert(
-      repo.name,
-      `${repo.description || "No description available"}\n\n${repo.html_url}`,
-      [
-        { text: "cancel", style: "cancel" },
-        {
-          text: "startSession",
-          onPress: () => {
-            // TODO: Implement session creation with repository context
-            console.log("Starting session for:", repo.full_name);
+  const spinValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isLoading) {
+      Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ).start();
+    } else {
+      spinValue.setValue(0);
+      spinValue.stopAnimation();
+    }
+  }, [isLoading, spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  const handleRepoPress = useCallback(
+    (repo: Repository) => {
+      // Navigate to session creation with repo context
+      Alert.alert(
+        repo.name,
+        `${repo.description || "No description available"}\n\n${repo.html_url}`,
+        [
+          { text: t("cancel"), style: "cancel" },
+          {
+            text: t("startSession"),
+            onPress: () => {
+              router.push({
+                pathname: "/create-session",
+                params: {
+                  repoUrl: repo.html_url,
+                  repoFullName: repo.full_name,
+                },
+              });
+            },
           },
-        },
-      ],
-    );
-  }, []);
+        ],
+      );
+    },
+    [router, t],
+  );
 
   // Initialize validation on mount only once
   useEffect(() => {
@@ -102,6 +143,19 @@ export default function Repos() {
               {t("repos")}
             </Text>
           </View>
+          <TouchableOpacity 
+            onPress={refreshRepos} 
+            disabled={isLoading}
+            style={styles.refreshButton}
+          >
+            <Animated.View style={{ transform: [{ rotate: spin }] }}>
+              <IconSymbol
+                name="arrow.clockwise"
+                size={20}
+                color={isDark ? "#94a3b8" : "#64748b"}
+              />
+            </Animated.View>
+          </TouchableOpacity>
         </View>
 
         {/* Enhanced Repository Manager */}
@@ -150,6 +204,9 @@ const styles = StyleSheet.create({
   },
   headerTitleDark: {
     color: "#f8fafc",
+  },
+  refreshButton: {
+    padding: 8,
   },
   emptyContainer: {
     alignItems: "center",

@@ -20,8 +20,8 @@ export function WorkflowCard({
 }: WorkflowCardProps) {
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
-  const borderColor = useThemeColor({}, "border");
+  const cardColor = useThemeColor({}, "background");
+  const borderColor = useThemeColor({}, "icon");
 
   const getStatusColor = (status: string) => {
     switch (status) {

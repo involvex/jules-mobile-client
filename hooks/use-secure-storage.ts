@@ -1,12 +1,12 @@
-import * as SecureStore from "expo-secure-store";
 import { useCallback, useState } from "react";
+import { storage } from "@/utils/storage";
 
 const API_KEY_STORAGE_KEY = "jules_api_key";
 const THEME_STORAGE_KEY = "jules_theme";
 const LANGUAGE_STORAGE_KEY = "jules_language";
 
 /**
- * SecureStoreを使用したセキュアストレージフック
+ * storageを使用したセキュアストレージフック (Web/Native対応)
  */
 export function useSecureStorage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +15,7 @@ export function useSecureStorage() {
   const saveApiKey = useCallback(async (key: string): Promise<void> => {
     setIsLoading(true);
     try {
-      await SecureStore.setItemAsync(API_KEY_STORAGE_KEY, key);
+      await storage.setItem(API_KEY_STORAGE_KEY, key);
     } finally {
       setIsLoading(false);
     }
@@ -24,7 +24,7 @@ export function useSecureStorage() {
   // APIキーの取得
   const getApiKey = useCallback(async (): Promise<string | null> => {
     try {
-      return await SecureStore.getItemAsync(API_KEY_STORAGE_KEY);
+      return await storage.getItem(API_KEY_STORAGE_KEY);
     } catch {
       return null;
     }
@@ -33,17 +33,17 @@ export function useSecureStorage() {
   // APIキーの削除
   const deleteApiKey = useCallback(async (): Promise<void> => {
     try {
-      await SecureStore.deleteItemAsync(API_KEY_STORAGE_KEY);
+      await storage.deleteItem(API_KEY_STORAGE_KEY);
     } catch {
       // 無視
     }
   }, []);
 
-  // テーマの保存 (非機密情報なのでSecureStoreでもOK)
+  // テーマの保存
   const saveTheme = useCallback(
     async (theme: "light" | "dark"): Promise<void> => {
       try {
-        await SecureStore.setItemAsync(THEME_STORAGE_KEY, theme);
+        await storage.setItem(THEME_STORAGE_KEY, theme);
       } catch {
         // 無視
       }
@@ -54,7 +54,7 @@ export function useSecureStorage() {
   // テーマの取得
   const getTheme = useCallback(async (): Promise<"light" | "dark" | null> => {
     try {
-      const theme = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
+      const theme = await storage.getItem(THEME_STORAGE_KEY);
       return theme as "light" | "dark" | null;
     } catch {
       return null;
@@ -64,7 +64,7 @@ export function useSecureStorage() {
   // 言語の保存
   const saveLanguage = useCallback(async (lang: "ja" | "en"): Promise<void> => {
     try {
-      await SecureStore.setItemAsync(LANGUAGE_STORAGE_KEY, lang);
+      await storage.setItem(LANGUAGE_STORAGE_KEY, lang);
     } catch {
       // 無視
     }
@@ -73,7 +73,7 @@ export function useSecureStorage() {
   // 言語の取得
   const getLanguage = useCallback(async (): Promise<"ja" | "en" | null> => {
     try {
-      const lang = await SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY);
+      const lang = await storage.getItem(LANGUAGE_STORAGE_KEY);
       return lang as "ja" | "en" | null;
     } catch {
       return null;

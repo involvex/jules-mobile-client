@@ -9,7 +9,7 @@ type IconMapping = Record<
   SymbolViewProps["name"],
   ComponentProps<typeof MaterialIcons>["name"]
 >;
-type IconSymbolName = keyof typeof MAPPING;
+export type IconSymbolName = keyof typeof MAPPING;
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -44,6 +44,25 @@ const MAPPING = {
   lightbulb: "lightbulb",
   "info.circle": "info",
   link: "link",
+  magnifyingglass: "search",
+  folder: "folder",
+  "arrow.up": "arrow-upward",
+  "arrow.triangle.merge": "call-merge",
+  "exclamationmark.triangle": "warning",
+  gearshape: "settings",
+  questionmark: "help",
+  "play.fill": "play-arrow",
+  "safari.fill": "explore",
+  "doc.on.doc": "content-copy",
+  "doc.on.doc.fill": "content-copy",
+  "lock.fill": "lock",
+  "globe.fill": "public",
+  "star.fill": "star",
+  "fork.knife": "restaurant", // Best match for fork? Maybe 'call-split'? Let's use 'restaurant' for knife/fork icon if available or 'call-split' for git fork.
+  "chevron.up": "keyboard-arrow-up",
+  "pause.fill": "pause",
+  cpu: "memory",
+  "trash.fill": "delete",
 
   // Theme
   "sun.max.fill": "light-mode",

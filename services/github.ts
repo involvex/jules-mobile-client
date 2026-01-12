@@ -1,3 +1,5 @@
+import { enhancedCache } from "@/utils/enhanced-cache";
+import { CacheOptions } from "@/constants/types";
 import { Octokit } from "@octokit/rest";
 
 // Type definitions for GitHub API responses and errors
@@ -73,13 +75,6 @@ export interface RequestMetrics {
   size: number;
 }
 
-// Cache entry with TTL
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  ttl: number;
-}
-
 // Request queue for rate limiting
 interface QueuedRequest<T> {
   id: string;
@@ -102,7 +97,6 @@ export class GitHubService {
     used: 0,
   };
 
-  private cache = new Map<string, CacheEntry<any>>();
   private requestQueue: QueuedRequest<any>[] = [];
   private isProcessingQueue = false;
   private metrics: RequestMetrics[] = [];
@@ -152,8 +146,8 @@ export class GitHubService {
   /**
    * Clear all cached data
    */
-  clearCache(): void {
-    this.cache.clear();
+  async clearCache(): Promise<void> {
+    await enhancedCache.clear();
   }
 
   /**
@@ -178,7 +172,7 @@ export class GitHubService {
     const cacheKey = `user-repos-${per_page}-${page}`;
 
     // Check cache first
-    const cached = this.getFromCache<Repository[]>(cacheKey);
+    const cached = await enhancedCache.get<Repository[]>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -194,7 +188,7 @@ export class GitHubService {
     const repos = response.data as Repository[];
 
     // Cache the result for 5 minutes
-    this.setCache(cacheKey, repos, 300000);
+    await enhancedCache.set(cacheKey, repos, { ttl: 300000 });
 
     return repos;
   }
@@ -220,7 +214,7 @@ export class GitHubService {
     const cacheKey = `search-${searchQuery}-${sort}-${order}-${per_page}-${page}`;
 
     // Check cache first
-    const cached = this.getFromCache<SearchResults>(cacheKey);
+    const cached = await enhancedCache.get<SearchResults>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -236,7 +230,7 @@ export class GitHubService {
     const results = response.data as SearchResults;
 
     // Cache search results for 10 minutes
-    this.setCache(cacheKey, results, 600000);
+    await enhancedCache.set(cacheKey, results, { ttl: 600000 });
 
     return results;
   }
@@ -247,7 +241,7 @@ export class GitHubService {
   async getRepo(owner: string, repo: string): Promise<Repository> {
     const cacheKey = `repo-${owner}-${repo}`;
 
-    const cached = this.getFromCache<Repository>(cacheKey);
+    const cached = await enhancedCache.get<Repository>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -260,7 +254,7 @@ export class GitHubService {
     const repository = response.data as Repository;
 
     // Cache for 15 minutes
-    this.setCache(cacheKey, repository, 900000);
+    await enhancedCache.set(cacheKey, repository, { ttl: 900000 });
 
     return repository;
   }
@@ -271,7 +265,7 @@ export class GitHubService {
   async getRepoTopics(owner: string, repo: string): Promise<string[]> {
     const cacheKey = `topics-${owner}-${repo}`;
 
-    const cached = this.getFromCache<string[]>(cacheKey);
+    const cached = await enhancedCache.get<string[]>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -284,7 +278,7 @@ export class GitHubService {
     const topics = response.data.names || [];
 
     // Cache for 30 minutes
-    this.setCache(cacheKey, topics, 1800000);
+    await enhancedCache.set(cacheKey, topics, { ttl: 1800000 });
 
     return topics;
   }
@@ -298,7 +292,7 @@ export class GitHubService {
   ): Promise<Record<string, number>> {
     const cacheKey = `languages-${owner}-${repo}`;
 
-    const cached = this.getFromCache<Record<string, number>>(cacheKey);
+    const cached = await enhancedCache.get<Record<string, number>>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -311,7 +305,7 @@ export class GitHubService {
     const languages = response.data as Record<string, number>;
 
     // Cache for 30 minutes
-    this.setCache(cacheKey, languages, 1800000);
+    await enhancedCache.set(cacheKey, languages, { ttl: 1800000 });
 
     return languages;
   }
@@ -326,8 +320,8 @@ export class GitHubService {
     });
 
     // Invalidate related caches
-    this.invalidateCache(`repo-${owner}-${repo}`);
-    this.invalidateCache(`user-repos-*`);
+    await enhancedCache.invalidatePattern(`repo-${owner}-${repo}`);
+    await enhancedCache.invalidatePattern(`user-repos-.*`);
   }
 
   /**
@@ -340,8 +334,8 @@ export class GitHubService {
     });
 
     // Invalidate related caches
-    this.invalidateCache(`repo-${owner}-${repo}`);
-    this.invalidateCache(`user-repos-*`);
+    await enhancedCache.invalidatePattern(`repo-${owner}-${repo}`);
+    await enhancedCache.invalidatePattern(`user-repos-.*`);
   }
 
   /**
@@ -354,7 +348,7 @@ export class GitHubService {
     });
 
     // Invalidate user repos cache
-    this.invalidateCache(`user-repos-*`);
+    await enhancedCache.invalidatePattern(`user-repos-.*`);
 
     return response.data as Repository;
   }
@@ -516,46 +510,6 @@ export class GitHubService {
       type,
       retryAfter,
     };
-  }
-
-  /**
-   * Cache management methods
-   */
-  private getFromCache<T>(key: string): T | null {
-    const entry = this.cache.get(key);
-    if (!entry) return null;
-
-    if (Date.now() - entry.timestamp > entry.ttl) {
-      this.cache.delete(key);
-      return null;
-    }
-
-    return entry.data;
-  }
-
-  private setCache<T>(key: string, data: T, ttl: number): void {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl,
-    });
-  }
-
-  private invalidateCache(pattern: string): void {
-    const keysToDelete: string[] = [];
-
-    for (const key of this.cache.keys()) {
-      if (pattern.includes("*")) {
-        const regex = new RegExp(pattern.replace(/\*/g, ".*"));
-        if (regex.test(key)) {
-          keysToDelete.push(key);
-        }
-      } else if (key === pattern) {
-        keysToDelete.push(key);
-      }
-    }
-
-    keysToDelete.forEach(key => this.cache.delete(key));
   }
 
   /**

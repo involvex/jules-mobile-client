@@ -8,6 +8,7 @@ import { Stack } from "expo-router";
 import "react-native-reanimated";
 
 import { ApiKeyProvider } from "@/constants/api-key-context";
+import { GithubProvider } from "@/constants/github-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { I18nProvider } from "@/constants/i18n-context";
 
@@ -20,25 +21,30 @@ export default function RootLayout() {
 
   return (
     <ApiKeyProvider>
-      <I18nProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: "modal", title: "Modal" }}
-            />
-            <Stack.Screen
-              name="create-session"
-              options={{ presentation: "modal", title: "New Task" }}
-            />
-            <Stack.Screen name="session/[id]" options={{ title: "Session" }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </I18nProvider>
+      <GithubProvider>
+        <I18nProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="modal"
+                options={{ presentation: "modal", title: "Modal" }}
+              />
+              <Stack.Screen
+                name="create-session"
+                options={{ presentation: "modal", title: "New Task" }}
+              />
+              <Stack.Screen
+                name="session/[id]"
+                options={{ title: "Session" }}
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </I18nProvider>
+      </GithubProvider>
     </ApiKeyProvider>
   );
 }

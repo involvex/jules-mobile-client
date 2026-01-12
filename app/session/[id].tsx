@@ -315,16 +315,13 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
   },
   sendButton: {
+    backgroundColor: "#2563eb",
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#2563eb",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#2563eb",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px 0px rgba(37, 99, 235, 0.2)",
     elevation: 4,
   },
   sendButtonDisabled: {

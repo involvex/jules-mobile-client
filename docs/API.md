@@ -322,3 +322,73 @@ const interval = setInterval(async () => {
   }
 }, 5000);
 ```
+
+## GitHub API Integration
+
+The app integrates with GitHub's REST API for repository management, webhooks, and workflow monitoring.
+
+### Base URL
+
+```
+https://api.github.com
+```
+
+### Authentication
+
+GitHub API requests use personal access tokens:
+
+```http
+Authorization: Bearer ghp_...
+```
+
+### Key Endpoints
+
+#### Repositories
+
+```http
+GET /user/repos - List user repositories
+GET /repos/{owner}/{repo} - Get repository details
+GET /repos/{owner}/{repo}/actions/workflows - List workflows
+GET /repos/{owner}/{repo}/actions/runs - List workflow runs
+GET /repos/{owner}/{repo}/pulls - List pull requests
+```
+
+#### Webhooks
+
+```http
+POST /repos/{owner}/{repo}/hooks - Create webhook
+GET /repos/{owner}/{repo}/hooks - List webhooks
+DELETE /repos/{owner}/{repo}/hooks/{hook_id} - Delete webhook
+```
+
+### Rate Limits
+
+GitHub API has stricter rate limits than Jules API:
+
+- **Authenticated requests**: 5,000 per hour
+- **Unauthenticated requests**: 60 per hour
+
+The app implements intelligent caching and background sync to minimize API calls.
+
+### Error Handling
+
+GitHub API errors follow standard HTTP status codes with detailed error messages:
+
+```json
+{
+  "message": "Not Found",
+  "documentation_url": "https://docs.github.com/rest"
+}
+```
+
+### Webhook Security
+
+Webhooks are secured with HMAC-SHA256 signatures:
+
+```typescript
+const signature = crypto
+  .createHmac("sha256", secret)
+  .update(payload)
+  .digest("hex");
+const expectedSignature = `sha256=${signature}`;
+```

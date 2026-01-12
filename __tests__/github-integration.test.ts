@@ -1,5 +1,6 @@
 import { useGithubDeepLinking } from "@/hooks/use-github-deep-linking";
 import { useGithubSession } from "@/hooks/use-github-session";
+import { renderHook } from "@testing-library/react-native";
 import { useGithubApi } from "@/hooks/use-github-api";
 
 // Mock dependencies
@@ -56,14 +57,16 @@ describe("GitHub Integration Tests", () => {
       const { result } = renderHook(() => useGithubApi());
 
       // Mock successful authentication
-      result.current.octokit.rest.users.getAuthenticated.mockResolvedValue({
+      (
+        result.current.octokit as any
+      ).rest.users.getAuthenticated.mockResolvedValue({
         data: { login: "testuser" },
       });
 
       const isValid = await result.current.validateToken();
       expect(isValid).toBe(true);
       expect(
-        result.current.octokit.rest.users.getAuthenticated,
+        (result.current.octokit as any).rest.users.getAuthenticated,
       ).toHaveBeenCalled();
     });
 
@@ -78,16 +81,16 @@ describe("GitHub Integration Tests", () => {
       ];
 
       const { result } = renderHook(() => useGithubApi());
-      result.current.octokit.rest.repos.listForAuthenticatedUser.mockResolvedValue(
-        {
-          data: mockRepos,
-        },
-      );
+      (
+        result.current.octokit as any
+      ).rest.repos.listForAuthenticatedUser.mockResolvedValue({
+        data: mockRepos,
+      });
 
       const repos = await result.current.getUserRepos();
       expect(repos).toEqual(mockRepos);
       expect(
-        result.current.octokit.rest.repos.listForAuthenticatedUser,
+        (result.current.octokit as any).rest.repos.listForAuthenticatedUser,
       ).toHaveBeenCalledWith({
         per_page: 30,
         page: 1,
@@ -236,9 +239,9 @@ describe("GitHub Integration Tests", () => {
       const { result } = renderHook(() => useGithubApi());
 
       // Mock API error
-      result.current.octokit.rest.users.getAuthenticated.mockRejectedValue(
-        new Error("API Error"),
-      );
+      (
+        result.current.octokit as any
+      ).rest.users.getAuthenticated.mockRejectedValue(new Error("API Error"));
 
       const isValid = await result.current.validateToken();
       expect(isValid).toBe(false);

@@ -121,7 +121,7 @@ export function useGithubWebhooksNative() {
         const hash = await Crypto.digestStringAsync(
           Crypto.CryptoDigestAlgorithm.SHA256,
           payload + secret,
-          Crypto.CryptoEncoding.HEX,
+          { encoding: Crypto.CryptoEncoding.HEX },
         );
 
         // Compare signatures in constant time to prevent timing attacks

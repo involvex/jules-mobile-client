@@ -1,4 +1,10 @@
-import { useCallback, useRef, useEffect, useMemo } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { debounce, throttle } from "lodash";
 
 /**
@@ -23,7 +29,7 @@ class CacheManager {
 
     // Remove oldest entries if cache is full
     if (this.cache.size >= this.maxSize) {
-      const oldestKey = this.cache.keys().next().value;
+      const oldestKey = this.cache.keys().next().value as string;
       this.cache.delete(oldestKey);
     }
 
@@ -142,7 +148,7 @@ export const performanceMonitor = new PerformanceMonitor();
 export class MemoryManager {
   private cleanupTasks: (() => void)[] = [];
   private isMonitoring = false;
-  private monitorInterval: NodeJS.Timeout | null = null;
+  private monitorInterval: NodeJS.Timeout | number | null = null;
 
   addCleanupTask(task: () => void): void {
     this.cleanupTasks.push(task);
@@ -198,7 +204,7 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(
   deps: React.DependencyList,
   delay: number = 300,
 ): T {
-  return useCallback(debounce(callback, delay), deps) as T;
+  return useCallback(debounce(callback, delay), deps) as unknown as T;
 }
 
 export function useThrottledCallback<T extends (...args: any[]) => any>(
@@ -209,7 +215,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   return useCallback(
     throttle(callback, delay, { leading: true, trailing: false }),
     deps,
-  ) as T;
+  ) as unknown as T;
 }
 
 export function useLazyLoading<T>(
@@ -298,7 +304,7 @@ export function useOptimizedImage(
         setError(null);
 
         // Check if image is cached
-        const cached = cacheManager.get(`image_${uri}`);
+        const cached = cacheManager.get<string>(`image_${uri}`);
         if (cached) {
           setImageUri(cached);
           setIsLoading(false);
@@ -347,7 +353,7 @@ export function lazyImport<T extends React.ComponentType<any>>(
     } catch (error) {
       console.error("Failed to load module:", error);
       if (fallback) {
-        return { default: fallback };
+        return { default: fallback as any };
       }
       throw error;
     }
@@ -403,7 +409,9 @@ export const networkOptimizer = new NetworkOptimizer();
 // Bundle analysis utilities
 export function analyzeBundleSize(): void {
   if (typeof window !== "undefined" && window.performance) {
-    const resources = performance.getEntriesByType("resource");
+    const resources = performance.getEntriesByType(
+      "resource",
+    ) as PerformanceResourceTiming[];
     const totalSize = resources.reduce((sum, resource) => {
       return sum + (resource.transferSize || 0);
     }, 0);

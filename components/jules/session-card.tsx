@@ -184,16 +184,11 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
-    padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#f1f5f9",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    boxShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.05)",
     elevation: 2,
+    marginBottom: 16,
+    overflow: "hidden",
   },
   cardDark: {
     backgroundColor: "#1e293b",

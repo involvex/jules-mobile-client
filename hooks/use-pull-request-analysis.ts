@@ -1,5 +1,6 @@
 import { PullRequest, Repository, useGithubApi } from "./use-github-api";
 import { useCallback, useEffect, useState } from "react";
+import { useApiKey } from "@/constants/api-key-context";
 import { useJulesApi } from "./use-jules-api";
 
 export interface PullRequestAnalysis {
@@ -34,9 +35,11 @@ export interface PullRequestMetrics {
 }
 
 export function usePullRequestAnalysis() {
-  const { getPullRequests, getRepoDetails } = useGithubApi();
-  const { analyzeCode, getAiResponse } = useJulesApi();
+  const { octokit } = useGithubApi();
+  const { apiKey } = useApiKey();
+  const { analyzeCode, getAiResponse } = useJulesApi({ apiKey });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [analyses, setAnalyses] = useState<Map<number, PullRequestAnalysis>>(
     new Map(),
   );
@@ -44,34 +47,207 @@ export function usePullRequestAnalysis() {
     new Map(),
   );
 
+  // Helper functions - defined first to avoid hoisting issues
+  const fetchPrDetails = useCallback(
+    async (owner: string, repo: string, prNumber: number) => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+      const { data } = await octokit.rest.pulls.get({
+        owner,
+        repo,
+        pull_number: prNumber,
+      });
+      return data;
+    },
+    [octokit],
+  );
+
+  const fetchPrDiff = useCallback(
+    async (owner: string, repo: string, prNumber: number) => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+      const { data } = await octokit.rest.pulls.get({
+        owner,
+        repo,
+        pull_number: prNumber,
+        mediaType: {
+          format: "diff",
+        },
+      });
+      return data as unknown as string;
+    },
+    [octokit],
+  );
+
+  const fetchPrFiles = useCallback(
+    async (owner: string, repo: string, prNumber: number) => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+      const { data } = await octokit.rest.pulls.listFiles({
+        owner,
+        repo,
+        pull_number: prNumber,
+      });
+      return data;
+    },
+    [octokit],
+  );
+
+  const estimateReviewTime = useCallback(
+    (
+      filesChanged: number,
+      additions: number,
+      deletions: number,
+      complexity: number,
+    ): string => {
+      let time = filesChanged * 5;
+      time += Math.min(additions + deletions, 1000) / 20;
+      time += complexity / 2;
+      const minutes = Math.ceil(time);
+      return minutes > 60
+        ? `${Math.floor(minutes / 60)}h ${minutes % 60}m`
+        : `${minutes}m`;
+    },
+    [],
+  );
+
+  const calculateComplexityScore = useCallback(
+    (files: any[], diff: string): number => {
+      let score = 0;
+      score += files.length * 10;
+      const additions = (diff.match(/\+/g) || []).length;
+      const deletions = (diff.match(/-/g) || []).length;
+      score += Math.min(additions + deletions, 1000) / 10;
+      const sensitiveFiles = files.filter(
+        file =>
+          file.filename.includes("config") ||
+          file.filename.includes("auth") ||
+          file.filename.includes("security"),
+      );
+      score += sensitiveFiles.length * 50;
+      return Math.min(score, 100);
+    },
+    [],
+  );
+
+  const identifyRiskFactors = useCallback(
+    (files: any[], diff: string): string[] => {
+      const risks: string[] = [];
+      const sensitiveFiles = files.filter(
+        file =>
+          file.filename.includes("config") ||
+          file.filename.includes("auth") ||
+          file.filename.includes("security") ||
+          file.filename.includes("database"),
+      );
+      if (sensitiveFiles.length > 0)
+        risks.push("Modifies sensitive configuration files");
+      const additions = (diff.match(/\+/g) || []).length;
+      const deletions = (diff.match(/-/g) || []).length;
+      if (additions + deletions > 500) risks.push("Large number of changes");
+      const hasTests = files.some(
+        file =>
+          file.filename.includes("test") || file.filename.includes("spec"),
+      );
+      if (!hasTests && files.length > 1) risks.push("No test files included");
+      return risks;
+    },
+    [],
+  );
+
+  const generateAnalysisPrompt = useCallback((prDetails: any, diff: string) => {
+    return `
+      Analyze this pull request for code quality, potential issues, and improvements:
+
+      PR Title: ${prDetails.title}
+      PR Description: ${prDetails.body || "No description provided"}
+      
+      Changes:
+      ${diff.slice(0, 10000)}
+
+      Please provide your response as valid JSON with "summary", "issues"[], "suggestions"[], "qualityScore", and "riskLevel" fields.
+    `;
+  }, []);
+
+  const parseAnalysisResponse = useCallback(
+    (response: string, prDetails: any, diff: string): PullRequestAnalysis => {
+      try {
+        const parsed = JSON.parse(response);
+        const additions = (diff.match(/\+/g) || []).length;
+        const deletions = (diff.match(/-/g) || []).length;
+
+        return {
+          id: prDetails.number,
+          title: prDetails.title,
+          confidence: 0.85,
+          summary: parsed.summary || "Analysis completed",
+          issues: parsed.issues || [],
+          suggestions: parsed.suggestions || [],
+          riskLevel: parsed.riskLevel || "medium",
+          timeEstimate: estimateReviewTime(
+            prDetails.changed_files || 0,
+            additions,
+            deletions,
+            parsed.qualityScore || 5,
+          ),
+          createdAt: new Date(),
+        };
+      } catch (error) {
+        return {
+          id: prDetails.number,
+          title: prDetails.title,
+          confidence: 0.5,
+          summary: response.substring(0, 200),
+          issues: [],
+          suggestions: [],
+          riskLevel: "medium",
+          timeEstimate: "30 minutes",
+          createdAt: new Date(),
+        };
+      }
+    },
+    [estimateReviewTime],
+  );
+
+  const generateReviewPrompt = useCallback((analysis: PullRequestAnalysis) => {
+    return `
+      Based on this pull request analysis, write a detailed code review:
+      Summary: ${analysis.summary}
+      Issues: ${analysis.issues.join(", ")}
+      Suggestions: ${analysis.suggestions.join(", ")}
+      Risk Level: ${analysis.riskLevel}
+    `;
+  }, []);
+
   // Analyze pull request using AI
   const analyzePullRequest = useCallback(
     async (
       owner: string,
       repo: string,
       prNumber: number,
+      sourceName: string = "github",
     ): Promise<PullRequestAnalysis> => {
       setIsAnalyzing(true);
+      setError(null);
 
       try {
-        // Get PR details and diff
         const prDetails = await fetchPrDetails(owner, repo, prNumber);
         const diff = await fetchPrDiff(owner, repo, prNumber);
-
-        // Generate analysis prompt
         const prompt = generateAnalysisPrompt(prDetails, diff);
 
-        // Get AI analysis
-        const analysis = await getAiResponse(prompt);
+        const session = await analyzeCode(sourceName, prompt);
+        if (!session) throw new Error("Failed to start analysis session");
 
-        // Parse and structure the response
+        const response = await getAiResponse(
+          session.name,
+          "Generate the JSON analysis now.",
+        );
+        const agentMsg = response?.agentMessaged?.agentMessage;
+        if (!agentMsg) throw new Error("Failed to get AI response");
+
         const structuredAnalysis = parseAnalysisResponse(
-          analysis,
+          agentMsg,
           prDetails,
           diff,
         );
 
-        // Cache the analysis
         setAnalyses(prev => {
           const newMap = new Map(prev);
           newMap.set(prNumber, structuredAnalysis);
@@ -79,14 +255,23 @@ export function usePullRequestAnalysis() {
         });
 
         return structuredAnalysis;
-      } catch (error) {
-        console.error("Failed to analyze PR:", error);
-        throw error;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Analysis failed";
+        setError(message);
+        console.error("Failed to analyze PR:", err);
+        throw err;
       } finally {
         setIsAnalyzing(false);
       }
     },
-    [getAiResponse],
+    [
+      analyzeCode,
+      getAiResponse,
+      fetchPrDetails,
+      fetchPrDiff,
+      generateAnalysisPrompt,
+      parseAnalysisResponse,
+    ],
   );
 
   // Automated PR review
@@ -101,31 +286,51 @@ export function usePullRequestAnalysis() {
         const reviewPrompt = generateReviewPrompt(analysis);
 
         // Get review content from AI
-        const reviewContent = await getAiResponse(reviewPrompt);
+        const session = await analyzeCode("github", reviewPrompt);
+        if (!session) throw new Error("Failed to create review session");
+
+        const response = await getAiResponse(
+          session.name,
+          "Write the review now.",
+        );
+        const reviewContent =
+          response?.agentMessaged?.agentMessage || "Analysis completed.";
 
         // Create review on GitHub
-        const review = await createGithubReview(
+        if (!octokit) throw new Error("GitHub API not initialized");
+        const { data: review } = await octokit.rest.pulls.createReview({
           owner,
           repo,
+          pull_number: prNumber,
+          body: reviewContent,
+          event: "COMMENT",
+        });
+
+        const structuredReview: PullRequestReview = {
+          id: review.id,
           prNumber,
-          reviewContent,
-        );
+          reviewId: review.id.toString(),
+          status: "commented",
+          body: review.body,
+          submittedAt: new Date(),
+          author: "Jules AI",
+        };
 
         // Cache the review
         setReviews(prev => {
           const newMap = new Map(prev);
           const existingReviews = newMap.get(prNumber) || [];
-          newMap.set(prNumber, [...existingReviews, review]);
+          newMap.set(prNumber, [...existingReviews, structuredReview]);
           return newMap;
         });
 
-        return review;
+        return structuredReview;
       } catch (error) {
         console.error("Failed to create automated review:", error);
         throw error;
       }
     },
-    [getAiResponse],
+    [analyzeCode, getAiResponse, octokit, generateReviewPrompt],
   );
 
   // Get PR metrics
@@ -139,39 +344,27 @@ export function usePullRequestAnalysis() {
         const diff = await fetchPrDiff(owner, repo, prNumber);
         const files = await fetchPrFiles(owner, repo, prNumber);
 
-        // Calculate metrics
         const totalFilesChanged = files.length;
-        const totalAdditions = diff.additions || 0;
-        const totalDeletions = diff.deletions || 0;
-
-        // Calculate complexity score based on various factors
+        const totalAdditions = (diff.match(/\+/g) || []).length;
+        const totalDeletions = (diff.match(/-/g) || []).length;
         const complexityScore = calculateComplexityScore(files, diff);
-
-        // Estimate review time
-        const estimatedReviewTime = estimateReviewTime(
-          totalFilesChanged,
-          totalAdditions,
-          totalDeletions,
-          complexityScore,
-        );
-
-        // Identify risk factors
-        const riskFactors = identifyRiskFactors(files, diff);
+        const estimatedReviewTimeRaw =
+          totalFilesChanged * 5 + complexityScore / 2;
 
         return {
           totalFilesChanged,
           totalAdditions,
           totalDeletions,
           complexityScore,
-          estimatedReviewTime,
-          riskFactors,
+          estimatedReviewTime: estimatedReviewTimeRaw,
+          riskFactors: identifyRiskFactors(files, diff),
         };
       } catch (error) {
         console.error("Failed to get PR metrics:", error);
         throw error;
       }
     },
-    [],
+    [fetchPrDiff, fetchPrFiles, calculateComplexityScore, identifyRiskFactors],
   );
 
   // Comment on PR
@@ -182,24 +375,20 @@ export function usePullRequestAnalysis() {
       prNumber: number,
       comment: string,
     ): Promise<void> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
       try {
-        await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ body: comment }),
-          },
-        );
+        await octokit.rest.issues.createComment({
+          owner,
+          repo,
+          issue_number: prNumber,
+          body: comment,
+        });
       } catch (error) {
         console.error("Failed to add comment:", error);
         throw error;
       }
     },
-    [],
+    [octokit],
   );
 
   // Approve PR
@@ -210,27 +399,21 @@ export function usePullRequestAnalysis() {
       prNumber: number,
       body?: string,
     ): Promise<void> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
       try {
-        await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              event: "APPROVE",
-              body: body || "LGTM! 🚀",
-            }),
-          },
-        );
+        await octokit.rest.pulls.createReview({
+          owner,
+          repo,
+          pull_number: prNumber,
+          event: "APPROVE",
+          body: body || "LGTM! \ud83d\ude80",
+        });
       } catch (error) {
         console.error("Failed to approve PR:", error);
         throw error;
       }
     },
-    [],
+    [octokit],
   );
 
   // Request changes on PR
@@ -241,267 +424,28 @@ export function usePullRequestAnalysis() {
       prNumber: number,
       body: string,
     ): Promise<void> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
       try {
-        await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              event: "REQUEST_CHANGES",
-              body,
-            }),
-          },
-        );
+        await octokit.rest.pulls.createReview({
+          owner,
+          repo,
+          pull_number: prNumber,
+          event: "REQUEST_CHANGES",
+          body,
+        });
       } catch (error) {
         console.error("Failed to request changes:", error);
         throw error;
       }
     },
-    [],
+    [octokit],
   );
-
-  // Helper functions
-  const fetchPrDetails = async (
-    owner: string,
-    repo: string,
-    prNumber: number,
-  ) => {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-      {
-        headers: {
-          Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-        },
-      },
-    );
-    return response.json();
-  };
-
-  const fetchPrDiff = async (owner: string, repo: string, prNumber: number) => {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-      {
-        headers: {
-          Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-          Accept: "application/vnd.github.v3.diff",
-        },
-      },
-    );
-    return response.text();
-  };
-
-  const fetchPrFiles = async (
-    owner: string,
-    repo: string,
-    prNumber: number,
-  ) => {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/files`,
-      {
-        headers: {
-          Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-        },
-      },
-    );
-    return response.json();
-  };
-
-  const createGithubReview = async (
-    owner: string,
-    repo: string,
-    prNumber: number,
-    body: string,
-  ) => {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `token ${process.env.EXPO_PUBLIC_GITHUB_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          event: "COMMENT",
-          body,
-        }),
-      },
-    );
-    return response.json();
-  };
-
-  const generateAnalysisPrompt = (prDetails: any, diff: string) => {
-    return `
-      Analyze this pull request for code quality, potential issues, and improvements:
-
-      PR Title: ${prDetails.title}
-      PR Description: ${prDetails.body || "No description provided"}
-      
-      Changes:
-      ${diff}
-
-      Please provide:
-      1. A concise summary of what this PR does
-      2. Identify any potential issues or bugs
-      3. Suggest improvements or optimizations
-      4. Assess the overall code quality
-      5. Estimate the complexity and risk level
-
-      Format your response as JSON with the following structure:
-      {
-        "summary": "Brief summary",
-        "issues": ["Issue 1", "Issue 2"],
-        "suggestions": ["Suggestion 1", "Suggestion 2"],
-        "qualityScore": 1-10,
-        "riskLevel": "low|medium|high"
-      }
-    `;
-  };
-
-  const generateReviewPrompt = (analysis: PullRequestAnalysis) => {
-    return `
-      Based on this pull request analysis, write a detailed code review:
-
-      Summary: ${analysis.summary}
-      Issues: ${analysis.issues.join(", ")}
-      Suggestions: ${analysis.suggestions.join(", ")}
-      Risk Level: ${analysis.riskLevel}
-
-      Please write a professional code review that:
-      1. Acknowledges the good parts of the code
-      2. Points out specific issues with suggestions for improvement
-      3. Provides constructive feedback
-      4. Is helpful and educational
-
-      Keep the review concise but thorough.
-    `;
-  };
-
-  const parseAnalysisResponse = (
-    response: string,
-    prDetails: any,
-    diff: string,
-  ): PullRequestAnalysis => {
-    try {
-      // Try to parse JSON from response
-      const parsed = JSON.parse(response);
-
-      return {
-        id: prDetails.number,
-        title: prDetails.title,
-        confidence: 0.85, // Default confidence
-        summary: parsed.summary || "Analysis completed",
-        issues: parsed.issues || [],
-        suggestions: parsed.suggestions || [],
-        riskLevel: parsed.riskLevel || "medium",
-        timeEstimate: estimateReviewTime(
-          (diff.match(/\+/g) || []).length,
-          (diff.match(/-/g) || []).length,
-          0,
-          parsed.qualityScore || 5,
-        ),
-        createdAt: new Date(),
-      };
-    } catch (error) {
-      // If JSON parsing fails, create a basic analysis
-      return {
-        id: prDetails.number,
-        title: prDetails.title,
-        confidence: 0.5,
-        summary: response.substring(0, 200),
-        issues: [],
-        suggestions: [],
-        riskLevel: "medium",
-        timeEstimate: "30 minutes",
-        createdAt: new Date(),
-      };
-    }
-  };
-
-  const calculateComplexityScore = (files: any[], diff: string): number => {
-    let score = 0;
-
-    // Base score on number of files
-    score += files.length * 10;
-
-    // Score based on diff size
-    const additions = (diff.match(/\+/g) || []).length;
-    const deletions = (diff.match(/-/g) || []).length;
-    score += Math.min(additions + deletions, 1000) / 10;
-
-    // Score based on file types
-    const sensitiveFiles = files.filter(
-      file =>
-        file.filename.includes("config") ||
-        file.filename.includes("auth") ||
-        file.filename.includes("security"),
-    );
-    score += sensitiveFiles.length * 50;
-
-    return Math.min(score, 100);
-  };
-
-  const estimateReviewTime = (
-    filesChanged: number,
-    additions: number,
-    deletions: number,
-    complexity: number,
-  ): number => {
-    // Base time: 5 minutes per file
-    let time = filesChanged * 5;
-
-    // Additional time based on changes
-    time += Math.min(additions + deletions, 1000) / 20;
-
-    // Additional time based on complexity
-    time += complexity / 2;
-
-    return Math.ceil(time);
-  };
-
-  const identifyRiskFactors = (files: any[], diff: string): string[] => {
-    const risks: string[] = [];
-
-    // Check for sensitive files
-    const sensitiveFiles = files.filter(
-      file =>
-        file.filename.includes("config") ||
-        file.filename.includes("auth") ||
-        file.filename.includes("security") ||
-        file.filename.includes("database"),
-    );
-
-    if (sensitiveFiles.length > 0) {
-      risks.push("Modifies sensitive configuration files");
-    }
-
-    // Check for large changes
-    const additions = (diff.match(/\+/g) || []).length;
-    const deletions = (diff.match(/-/g) || []).length;
-
-    if (additions + deletions > 500) {
-      risks.push("Large number of changes");
-    }
-
-    // Check for test files
-    const hasTests = files.some(
-      file => file.filename.includes("test") || file.filename.includes("spec"),
-    );
-
-    if (!hasTests && files.length > 1) {
-      risks.push("No test files included");
-    }
-
-    return risks;
-  };
 
   return {
     isAnalyzing,
     analyses,
     reviews,
+    error,
     analyzePullRequest,
     createAutomatedReview,
     getPullRequestMetrics,

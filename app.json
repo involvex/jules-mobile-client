@@ -2,12 +2,20 @@
   "expo": {
     "name": "jules-mobile-client",
     "slug": "jules-mobile-client",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "assets/images/icon.png",
     "scheme": "julesmobileclient",
     "userInterfaceStyle": "automatic",
     "jsEngine": "hermes",
+    "buildCacheProvider": {
+      "plugin": "@expo/local-build-cache-provider"
+    },
+    "splash": {
+      "image": "assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,

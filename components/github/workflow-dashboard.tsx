@@ -1,5 +1,8 @@
+import {
+  useWorkflowUpdates,
+  WorkflowUpdate,
+} from "@/hooks/use-workflow-updates";
 import { useGithubApi, Workflow, WorkflowRun } from "@/hooks/use-github-api";
-import { useWorkflowUpdates } from "@/hooks/use-workflow-updates";
 import React, { useCallback, useEffect, useState } from "react";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -86,7 +89,7 @@ export function WorkflowDashboard({ owner, repo }: WorkflowDashboardProps) {
       workflow={item}
       isActive={selectedWorkflow?.id === item.id}
       onPress={() => setSelectedWorkflow(item)}
-      updates={getUpdatesForWorkflow(item.id)}
+      updates={getUpdatesForWorkflow(item.id) as any}
     />
   );
 
@@ -139,20 +142,22 @@ export function WorkflowDashboard({ owner, repo }: WorkflowDashboardProps) {
           <ThemedText style={[styles.sectionTitle, { color: textColor }]}>
             Recent Updates
           </ThemedText>
-          {workflowUpdates.slice(0, 5).map((update, index) => (
-            <ThemedView key={index} style={styles.updateItem}>
-              <ThemedText style={[styles.updateText, { color: textColor }]}>
-                {update.type === "status_change" &&
-                  `Status changed to ${update.status}`}
-                {update.type === "new_run" && "New workflow run started"}
-                {update.type === "completed" &&
-                  `Workflow completed with ${update.conclusion}`}
-              </ThemedText>
-              <ThemedText style={[styles.updateTime, { color: textColor }]}>
-                {update.timestamp.toLocaleTimeString()}
-              </ThemedText>
-            </ThemedView>
-          ))}
+          {workflowUpdates
+            .slice(0, 5)
+            .map((update: WorkflowUpdate, index: number) => (
+              <ThemedView key={index} style={styles.updateItem}>
+                <ThemedText style={[styles.updateText, { color: textColor }]}>
+                  {update.type === "status_change" &&
+                    `Status changed to ${update.status}`}
+                  {update.type === "new_run" && "New workflow run started"}
+                  {update.type === "completed" &&
+                    `Workflow completed with ${update.conclusion}`}
+                </ThemedText>
+                <ThemedText style={[styles.updateTime, { color: textColor }]}>
+                  {update.timestamp.toLocaleTimeString()}
+                </ThemedText>
+              </ThemedView>
+            ))}
         </ThemedView>
       )}
     </ThemedView>

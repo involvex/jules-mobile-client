@@ -761,10 +761,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "#10b981",
     borderRadius: 10,
-    shadowColor: "#10b981",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px 0px rgba(16, 185, 129, 0.2)",
     elevation: 4,
   },
   approveButtonText: {

@@ -10,10 +10,17 @@ import {
 } from "react-native";
 import React, { useState, useCallback, useMemo } from "react";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { ThemedText } from "@/components/themed-text";
 
 interface OptimizedListProps<T> {
   data: T[];
-  renderItem: ({ item, index }: { item: T; index: number }) => React.ReactNode;
+  renderItem: ({
+    item,
+    index,
+  }: {
+    item: T;
+    index: number;
+  }) => React.ReactElement | null;
   keyExtractor: (item: T, index: number) => string;
   onEndReached?: () => void;
   onRefresh?: () => Promise<void>;
@@ -24,6 +31,7 @@ interface OptimizedListProps<T> {
   estimatedItemSize?: number;
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
   ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null;
+  ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null;
   showsVerticalScrollIndicator?: boolean;
   numColumns?: number;
   initialNumToRender?: number;
@@ -31,6 +39,8 @@ interface OptimizedListProps<T> {
   maxToRenderPerBatch?: number;
   updateCellsBatchingPeriod?: number;
 }
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 export function OptimizedList<T>({
   data,
@@ -45,6 +55,7 @@ export function OptimizedList<T>({
   estimatedItemSize = 100,
   ListHeaderComponent,
   ListFooterComponent,
+  ListEmptyComponent,
   showsVerticalScrollIndicator = false,
   numColumns = 1,
   initialNumToRender = 10,
@@ -54,6 +65,7 @@ export function OptimizedList<T>({
 }: OptimizedListProps<T>) {
   const [refreshingState, setRefreshingState] = useState(false);
   const scrollY = new Animated.Value(0);
+  const textColor = useThemeColor({}, "text");
 
   const handleRefresh = useCallback(async () => {
     if (onRefresh) {
@@ -72,29 +84,40 @@ export function OptimizedList<T>({
     }
   }, [onEndReached, loading]);
 
-  const renderEmptyComponent = useCallback(
-    () => (
+  const renderEmptyComponent = useCallback(() => {
+    if (ListEmptyComponent) {
+      if (typeof ListEmptyComponent === "function") {
+        return React.createElement(ListEmptyComponent as any);
+      }
+      return ListEmptyComponent;
+    }
+    return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>{emptyMessage}</Text>
+        <ThemedText style={styles.emptyText}>{emptyMessage}</ThemedText>
       </View>
-    ),
-    [emptyMessage],
-  );
+    );
+  }, [emptyMessage, ListEmptyComponent]);
 
   const renderFooterComponent = useCallback(() => {
     if (loading) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={useThemeColor({}, "text")} />
+          <ActivityIndicator size="small" color={textColor} />
           <Text style={styles.loadingText}>Loading more...</Text>
         </View>
       );
     }
-    return ListFooterComponent || null;
-  }, [loading, ListFooterComponent]);
+    if (ListFooterComponent) {
+      if (typeof ListFooterComponent === "function") {
+        return React.createElement(ListFooterComponent as any);
+      }
+      return ListFooterComponent;
+    }
+    return null;
+  }, [loading, ListFooterComponent, textColor]);
 
   const getItemLayout = useCallback(
-    (data: T[] | null | undefined, index: number) => {
+    (_data: any, index: number) => {
       if (!itemHeight) {
         return {
           length: estimatedItemSize,
@@ -119,37 +142,41 @@ export function OptimizedList<T>({
         },
       ],
     }),
-    [],
+    [scrollY],
   );
 
   return (
-    <Animated.FlatList
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={keyExtractor}
+    <AnimatedFlatList
+      data={data as any}
+      renderItem={renderItem as any}
+      keyExtractor={keyExtractor as any}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true },
+        {
+          useNativeDriver: true,
+        },
       )}
       refreshControl={
         onRefresh ? (
           <RefreshControl
             refreshing={refreshing || refreshingState}
             onRefresh={handleRefresh}
-            tintColor={useThemeColor({}, "text")}
+            tintColor={textColor}
             title="Refreshing..."
-            titleColor={useThemeColor({}, "text")}
+            titleColor={textColor}
           />
         ) : undefined
       }
-      ListEmptyComponent={renderEmptyComponent}
-      ListFooterComponent={renderFooterComponent}
+      ListEmptyComponent={renderEmptyComponent as any}
+      ListFooterComponent={renderFooterComponent as any}
       ListHeaderComponent={
         ListHeaderComponent ? (
           <Animated.View style={[animatedHeaderStyle]}>
-            {ListHeaderComponent}
+            {typeof ListHeaderComponent === "function"
+              ? React.createElement(ListHeaderComponent as any)
+              : ListHeaderComponent}
           </Animated.View>
         ) : undefined
       }
@@ -160,7 +187,7 @@ export function OptimizedList<T>({
       maxToRenderPerBatch={maxToRenderPerBatch}
       updateCellsBatchingPeriod={updateCellsBatchingPeriod}
       removeClippedSubviews={true}
-      getItemLayout={itemHeight ? getItemLayout : undefined}
+      getItemLayout={itemHeight ? (getItemLayout as any) : undefined}
       contentContainerStyle={styles.listContent}
       style={styles.list}
     />
@@ -178,7 +205,7 @@ export function SkeletonList({
   renderItem,
   loading = true,
 }: SkeletonListProps) {
-  const theme = useThemeColor({}, "text");
+  const textColor = useThemeColor({}, "text");
 
   if (!loading) {
     return (
@@ -197,19 +224,19 @@ export function SkeletonList({
           <View
             style={[
               styles.skeletonLine,
-              { backgroundColor: theme, opacity: 0.2 },
+              { backgroundColor: textColor, opacity: 0.2 },
             ]}
           />
           <View
             style={[
               styles.skeletonLine,
-              { backgroundColor: theme, opacity: 0.1, width: "80%" },
+              { backgroundColor: textColor, opacity: 0.1, width: "80%" },
             ]}
           />
           <View
             style={[
               styles.skeletonLine,
-              { backgroundColor: theme, opacity: 0.1, width: "60%" },
+              { backgroundColor: textColor, opacity: 0.1, width: "60%" },
             ]}
           />
         </View>
@@ -241,6 +268,7 @@ export function VirtualizedList<T>({
 }: VirtualizedListProps<T>) {
   const [scrollTop, setScrollTop] = useState(0);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 10 });
+  const textColor = useThemeColor({}, "text");
 
   const handleScroll = useCallback(
     (event: any) => {
@@ -299,7 +327,7 @@ export function VirtualizedList<T>({
 
       {loading && (
         <View style={styles.virtualizedLoading}>
-          <ActivityIndicator size="small" color={useThemeColor({}, "text")} />
+          <ActivityIndicator size="small" color={textColor} />
         </View>
       )}
     </View>

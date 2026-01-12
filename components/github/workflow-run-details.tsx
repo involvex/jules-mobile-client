@@ -39,8 +39,8 @@ export function WorkflowRunDetails({
   );
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
-  const borderColor = useThemeColor({}, "border");
+  const cardColor = useThemeColor({}, "background");
+  const borderColor = useThemeColor({}, "icon");
   const colorScheme = useColorScheme();
 
   // Load run details and jobs

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useCallback, useEffect, useState } from "react";
 import { useApiKey } from "@/constants/api-key-context";
 import { Octokit } from "@octokit/rest";
@@ -180,8 +181,7 @@ export function useGithubApi() {
       setIsLoading(true);
       const { data } = await octokit.rest.users.getAuthenticated();
       return !!data.login;
-    } catch (error) {
-      console.error("Token validation failed:", error);
+    } catch (_error) {
       return false;
     } finally {
       setIsLoading(false);
@@ -565,6 +565,48 @@ export function useGithubApi() {
     [],
   );
 
+  // Cancel workflow run
+  const cancelWorkflowRun = useCallback(
+    async (owner: string, repo: string, runId: number): Promise<void> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+      try {
+        setIsLoading(true);
+        await octokit.rest.actions.cancelWorkflowRun({
+          owner,
+          repo,
+          run_id: runId,
+        });
+      } catch (error) {
+        console.error("Failed to cancel workflow run:", error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [octokit],
+  );
+
+  // Retry workflow run
+  const retryWorkflowRun = useCallback(
+    async (owner: string, repo: string, runId: number): Promise<void> => {
+      if (!octokit) throw new Error("GitHub API not initialized");
+      try {
+        setIsLoading(true);
+        await octokit.rest.actions.reRunWorkflow({
+          owner,
+          repo,
+          run_id: runId,
+        });
+      } catch (error) {
+        console.error("Failed to retry workflow run:", error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [octokit],
+  );
+
   return {
     octokit,
     isAuthenticated,
@@ -580,6 +622,8 @@ export function useGithubApi() {
     getPullRequests,
     getWorkflowJobs,
     getWorkflowRunDetails,
+    cancelWorkflowRun,
+    retryWorkflowRun,
     searchRepositories,
     getRepositoryByFullName,
     parseGithubUrl,

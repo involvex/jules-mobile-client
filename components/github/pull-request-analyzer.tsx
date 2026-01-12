@@ -40,6 +40,7 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
   const [metrics, setMetrics] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [customComment, setCustomComment] = useState("");
+  const [modalType, setModalType] = useState<"review" | "comment">("review");
 
   useEffect(() => {
     loadPullRequests();
@@ -143,34 +144,47 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
   };
 
   const handleRequestChanges = async (pr: PullRequest) => {
+    setModalType("review");
     setShowReviewModal(true);
   };
 
-  const submitRequestChanges = async () => {
+  const handleAddComment = async (pr: PullRequest) => {
+    setModalType("comment");
+    setShowReviewModal(true);
+  };
+
+  const submitModal = async () => {
     if (!customComment.trim()) {
-      Alert.alert(
-        "Error",
-        "Please provide a comment explaining the changes needed",
-      );
+      Alert.alert("Error", "Please provide a comment");
       return;
     }
 
     try {
-      await requestChangesOnPr(
-        repository.owner.login,
-        repository.name,
-        selectedPr!.number,
-        customComment,
-      );
-      Alert.alert(
-        "Changes Requested",
-        "Review with requested changes has been submitted",
-      );
+      if (modalType === "review") {
+        await requestChangesOnPr(
+          repository.owner.login,
+          repository.name,
+          selectedPr!.number,
+          customComment,
+        );
+        Alert.alert(
+          "Changes Requested",
+          "Review with requested changes has been submitted",
+        );
+      } else {
+        await addCommentToPr(
+          repository.owner.login,
+          repository.name,
+          selectedPr!.number,
+          customComment,
+        );
+        Alert.alert("Comment Added", "Your comment has been added to the PR");
+      }
       setShowReviewModal(false);
       setCustomComment("");
     } catch (error) {
-      console.error("Failed to request changes:", error);
-      Alert.alert("Error", "Failed to request changes");
+      console.error(`Failed to ${modalType}:`, error);
+      Alert.alert("Error", `Failed to ${modalType}`);
     }
   };
 
@@ -321,42 +335,7 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
 
                   <TouchableOpacity
                     style={[styles.actionButton, styles.commentButton]}
-                    onPress={() => {
-                      setSelectedPr(pr);
-                      Alert.prompt(
-                        "Add Comment",
-                        "Enter your comment:",
-                        [
-                          { text: "Cancel", style: "cancel" },
-                          {
-                            text: "Comment",
-                            onPress: async comment => {
-                              if (comment) {
-                                try {
-                                  await addCommentToPr(
-                                    repository.owner.login,
-                                    repository.name,
-                                    pr.number,
-                                    comment,
-                                  );
-                                  Alert.alert(
-                                    "Comment Added",
-                                    "Your comment has been added to the PR",
-                                  );
-                                } catch (error) {
-                                  console.error(
-                                    "Failed to add comment:",
-                                    error,
-                                  );
-                                  Alert.alert("Error", "Failed to add comment");
-                                }
-                              }
-                            },
-                          },
-                        ],
-                        "plain-text",
-                      );
-                    }}
+                    onPress={() => handleAddComment(pr)}
                   >
                     <IconSymbol
                       name="bubble.left.and.bubble.right"
@@ -429,7 +408,7 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
         </ScrollView>
       )}
 
-      {/* Request Changes Modal */}
+      {/* Request Changes / Comment Modal */}
       <Modal visible={showReviewModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View
@@ -440,9 +419,13 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
               },
             ]}
           >
-            <Text style={styles.modalTitle}>Request Changes</Text>
+            <Text style={styles.modalTitle}>
+              {modalType === "review" ? "Request Changes" : "Add Comment"}
+            </Text>
             <Text style={styles.modalSubtitle}>
-              Please provide detailed feedback on what changes are needed:
+              {modalType === "review"
+                ? "Please provide detailed feedback on what changes are needed:"
+                : "Enter your comment for this pull request:"}
             </Text>
 
             <TextInput
@@ -452,7 +435,11 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
               ]}
               value={customComment}
               onChangeText={setCustomComment}
-              placeholder="Enter your review comments..."
+              placeholder={
+                modalType === "review"
+                  ? "Enter your review comments..."
+                  : "Enter your comment..."
+              }
               placeholderTextColor={
                 colorScheme === "dark" ? "#9ca3af" : "#6b7280"
               }
@@ -469,11 +456,13 @@ export function PullRequestAnalyzer({ repository }: PullRequestAnalyzerProps) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.submitButton]}
-                onPress={submitRequestChanges}
+                onPress={submitModal}
                 disabled={!customComment.trim()}
               >
                 <Text style={styles.submitButtonText}>
-                  Submit Changes Request
+                  {modalType === "review"
+                    ? "Submit Changes Request"
+                    : "Submit Comment"}
                 </Text>
               </TouchableOpacity>
             </View>

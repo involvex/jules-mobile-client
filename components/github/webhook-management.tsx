@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
 import { useGithubWebhookIntegration } from "@/constants/github-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useI18n } from "@/constants/i18n-context";
 import React, { useEffect, useState } from "react";
 
@@ -203,7 +203,7 @@ export function WebhookManagement({ owner, repo }: WebhookManagementProps) {
           ].map(event => (
             <View key={event.key} style={styles.eventRow}>
               <IconSymbol
-                name={event.icon}
+                name={event.icon as IconSymbolName}
                 size={16}
                 color={isDark ? "#94a3b8" : "#64748b"}
               />

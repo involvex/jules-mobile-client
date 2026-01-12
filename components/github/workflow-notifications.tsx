@@ -1,7 +1,9 @@
-import { useWorkflowUpdates } from "@/hooks/use-workflow-updates";
+import {
+  useWorkflowUpdates,
+  WorkflowUpdate,
+} from "@/hooks/use-workflow-updates";
 import React, { useCallback, useEffect, useState } from "react";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { WorkflowUpdate } from "@/hooks/use-github-api";
 import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
 import { StyleSheet, View } from "react-native";
@@ -23,8 +25,8 @@ export function WorkflowNotifications({
   const [isVisible, setIsVisible] = useState(false);
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
-  const borderColor = useThemeColor({}, "border");
+  const cardColor = useThemeColor({}, "background");
+  const borderColor = useThemeColor({}, "icon");
 
   // Check for new notifications
   const checkForNotifications = useCallback(() => {
@@ -113,7 +115,7 @@ interface NotificationItemProps {
 function NotificationItem({ notification }: NotificationItemProps) {
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
+  const cardColor = useThemeColor({}, "background");
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

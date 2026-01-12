@@ -6,10 +6,10 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import * as SecureStore from "expo-secure-store";
+import { storage } from "@/utils/storage";
 
 const API_KEY_STORAGE_KEY = "jules_api_key";
-const GITHUB_Token = "GITHUB_TOKEN";
+const GITHUB_TOKEN_STORAGE_KEY = "github_token_secure";
 
 interface ApiKeyContextType {
   apiKey: string;
@@ -30,27 +30,38 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   const [GITHUB_TOKEN, setGITHUB_TOKENState] = useState<string>("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load API key on mount
+  // Load keys on mount
   useEffect(() => {
-    const loadApiKey = async () => {
+    const loadKeys = async () => {
       try {
-        const savedKey = await SecureStore.getItemAsync(API_KEY_STORAGE_KEY);
-        if (savedKey) {
-          setApiKeyState(savedKey);
+        const [savedApiKey, savedGithubToken] = await Promise.all([
+          storage.getItem(API_KEY_STORAGE_KEY),
+          storage.getItem(GITHUB_TOKEN_STORAGE_KEY),
+        ]);
+
+        if (savedApiKey) {
+          setApiKeyState(savedApiKey);
+        }
+        if (savedGithubToken) {
+          setGITHUB_TOKENState(savedGithubToken);
         }
       } catch {
         // Ignore
       }
       setIsLoaded(true);
     };
-    void loadApiKey();
+    void loadKeys();
   }, []);
 
   // Save and update API key
   const setApiKey = useCallback(async (key: string) => {
     setApiKeyState(key);
     try {
-      await SecureStore.setItemAsync(API_KEY_STORAGE_KEY, key);
+      if (key) {
+        await storage.setItem(API_KEY_STORAGE_KEY, key);
+      } else {
+        await storage.deleteItem(API_KEY_STORAGE_KEY);
+      }
     } catch {
       // Ignore
     }
@@ -59,7 +70,11 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   const setGITHUB_TOKEN = useCallback(async (key: string) => {
     setGITHUB_TOKENState(key);
     try {
-      await SecureStore.setItemAsync(GITHUB_Token, key);
+      if (key) {
+        await storage.setItem(GITHUB_TOKEN_STORAGE_KEY, key);
+      } else {
+        await storage.deleteItem(GITHUB_TOKEN_STORAGE_KEY);
+      }
     } catch {
       // Ignore
     }
