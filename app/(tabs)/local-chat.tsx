@@ -12,9 +12,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState, useRef, useEffect } from "react";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { UseTheme } from "@/constants/theme-enhanced";
-import { ThemedText } from "@/components/themed-text";
+import { useTheme } from "@/constants/theme-enhanced";
 import { ThemedView } from "@/components/themed-view";
+import { ThemedText } from "@/components/themed-text";
 
 interface Message {
   id: string;
@@ -45,9 +45,7 @@ const LOCAL_MODELS = [
 ];
 
 export default function LocalChatScreen() {
-  // Call UseTheme first and ONLY once here to get everything needed
-  const theme = UseTheme();
-  const isDark = theme.isDark;
+  const { colors, isDark } = useTheme();
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
@@ -55,10 +53,10 @@ export default function LocalChatScreen() {
   const [isModelModalVisible, setIsModelModalVisible] = useState(false);
   const [selectedModel, setSelectedModel] = useState(LOCAL_MODELS[0]);
 
-  // Derive all colors from the theme object we already have
-  const backgroundColor = theme.colors.background;
-  const borderColor = theme.colors.border; 
-  const tintColor = theme.colors.primary;
+  // Derived colors
+  const backgroundColor = colors.background;
+  const borderColor = colors.border;
+  const tintColor = colors.primary;
   const secondaryBackground = isDark ? "#1e293b" : "#f1f5f9";
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -110,7 +108,7 @@ export default function LocalChatScreen() {
               <IconSymbol
                 name="chevron.down"
                 size={14}
-                color={theme.colors.textSecondary}
+                color={colors.textSecondary}
               />
             </TouchableOpacity>
           </View>
@@ -121,7 +119,7 @@ export default function LocalChatScreen() {
             <IconSymbol
               name="trash.fill"
               size={20}
-              color={theme.colors.textSecondary}
+              color={colors.textSecondary}
             />
           </TouchableOpacity>
         </View>
@@ -136,13 +134,12 @@ export default function LocalChatScreen() {
             style={styles.messageList}
             contentContainerStyle={styles.messageListContent}
           >
-            {messages.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <IconSymbol name="cpu" size={64} color={theme.colors.border} />
-                <ThemedText style={styles.emptyText}>
-                  Chat with local models on your device.
-                </ThemedText>
-                <ThemedText style={styles.emptySubText}>
+                      {messages.length === 0 ? (
+                        <View style={styles.emptyContainer}>
+                          <IconSymbol name="cpu" size={64} color={colors.border} />
+                          <ThemedText style={styles.emptyText}>
+                            Chat with local models on your device.
+                          </ThemedText>                <ThemedText style={styles.emptySubText}>
                   No data leaves your device.
                 </ThemedText>
               </View>
@@ -188,7 +185,7 @@ export default function LocalChatScreen() {
               style={[
                 styles.input,
                 {
-                  color: theme.colors.text,
+                  color: colors.text,
                   backgroundColor: secondaryBackground,
                   borderColor: borderColor,
                 },
@@ -196,7 +193,7 @@ export default function LocalChatScreen() {
               value={inputText}
               onChangeText={setInputText}
               placeholder="Type a message..."
-              placeholderTextColor={theme.colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               multiline
             />
             <TouchableOpacity
@@ -205,7 +202,7 @@ export default function LocalChatScreen() {
                 {
                   backgroundColor: inputText.trim()
                     ? tintColor
-                    : theme.colors.border,
+                    : colors.border,
                 },
               ]}
               onPress={handleSend}
@@ -252,9 +249,7 @@ export default function LocalChatScreen() {
                   }}
                 >
                   <View>
-                    <ThemedText type="defaultSemiBold">
-                      {model.name}
-                    </ThemedText>
+                    <ThemedText type="defaultSemiBold">{model.name}</ThemedText>
                     <ThemedText style={styles.modelItemDesc}>
                       {model.description}
                     </ThemedText>

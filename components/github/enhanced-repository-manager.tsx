@@ -35,75 +35,78 @@ interface SearchHeaderProps {
   t: any;
 }
 
-const SearchHeader = React.memo(({
-  searchQuery,
-  setSearchQuery,
-  languageFilter,
-  setLanguageFilter,
-  topicFilter,
-  setTopicFilter,
-  isDark,
-  t,
-}: SearchHeaderProps) => (
-  <View
-    style={[styles.searchContainer, isDark && styles.searchContainerDark]}
-  >
-    <View style={styles.searchInputContainer}>
-      <IconSymbol
-        name="magnifyingglass"
-        size={16}
-        color={isDark ? "#94a3b8" : "#64748b"}
-      />
-      <TextInput
-        style={[styles.searchInput, isDark && styles.searchInputDark]}
-        placeholder={t("searchRepositories") || "Search repositories..."}
-        placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      {searchQuery.length > 0 && (
+const SearchHeader = React.memo(
+  ({
+    searchQuery,
+    setSearchQuery,
+    languageFilter,
+    setLanguageFilter,
+    topicFilter,
+    setTopicFilter,
+    isDark,
+    t,
+  }: SearchHeaderProps) => (
+    <View
+      style={[styles.searchContainer, isDark && styles.searchContainerDark]}
+    >
+      <View style={styles.searchInputContainer}>
+        <IconSymbol
+          name="magnifyingglass"
+          size={16}
+          color={isDark ? "#94a3b8" : "#64748b"}
+        />
+        <TextInput
+          style={[styles.searchInput, isDark && styles.searchInputDark]}
+          placeholder={t("searchRepositories") || "Search repositories..."}
+          placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            style={styles.clearSearch}
+            onPress={() => setSearchQuery("")}
+          >
+            <IconSymbol
+              name="xmark.circle.fill"
+              size={16}
+              color={isDark ? "#94a3b8" : "#64748b"}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.filtersContainer}>
         <TouchableOpacity
-          style={styles.clearSearch}
-          onPress={() => setSearchQuery("")}
+          style={[styles.filterButton, isDark && styles.filterButtonDark]}
+          onPress={() =>
+            setLanguageFilter(
+              languageFilter === "TypeScript" ? null : "TypeScript",
+            )
+          }
         >
-          <IconSymbol
-            name="xmark.circle.fill"
-            size={16}
-            color={isDark ? "#94a3b8" : "#64748b"}
-          />
+          <ThemedText style={styles.filterButtonText}>
+            {languageFilter === "TypeScript" ? "✓ TypeScript" : "TypeScript"}
+          </ThemedText>
         </TouchableOpacity>
-      )}
-    </View>
 
-    <View style={styles.filtersContainer}>
-      <TouchableOpacity
-        style={[styles.filterButton, isDark && styles.filterButtonDark]}
-        onPress={() =>
-          setLanguageFilter(
-            languageFilter === "TypeScript" ? null : "TypeScript",
-          )
-        }
-      >
-        <ThemedText style={styles.filterButtonText}>
-          {languageFilter === "TypeScript" ? "✓ TypeScript" : "TypeScript"}
-        </ThemedText>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.filterButton, isDark && styles.filterButtonDark]}
-        onPress={() =>
-          setTopicFilter(topicFilter === "react" ? null : "react")
-        }
-      >
-        <ThemedText style={styles.filterButtonText}>
-          {topicFilter === "react" ? "✓ React" : "React"}
-        </ThemedText>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.filterButton, isDark && styles.filterButtonDark]}
+          onPress={() =>
+            setTopicFilter(topicFilter === "react" ? null : "react")
+          }
+        >
+          <ThemedText style={styles.filterButtonText}>
+            {topicFilter === "react" ? "✓ React" : "React"}
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
-));
+  ),
+);
+SearchHeader.displayName = "SearchHeader";
 
 export function EnhancedRepositoryManager({
   onRepositorySelect,
@@ -706,7 +709,7 @@ export function EnhancedRepositoryManager({
               : "No repositories found. Sync to load your repositories."
           }
           ListHeaderComponent={
-            <SearchHeader 
+            <SearchHeader
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               languageFilter={languageFilter}

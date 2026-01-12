@@ -143,8 +143,8 @@ export default function Repos() {
               {t("repos")}
             </Text>
           </View>
-          <TouchableOpacity 
-            onPress={refreshRepos} 
+          <TouchableOpacity
+            onPress={refreshRepos}
             disabled={isLoading}
             style={styles.refreshButton}
           >

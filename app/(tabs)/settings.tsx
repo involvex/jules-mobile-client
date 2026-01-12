@@ -18,21 +18,21 @@ import {
 } from "@/constants/types";
 import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { UseTheme } from "@/constants/theme-enhanced";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { settingsManager } from "@/utils/settings-manager";
 import { useApiKey } from "@/constants/api-key-context";
+import { useTheme } from "@/constants/theme-enhanced";
 import { useI18n } from "@/constants/i18n-context";
 import pkg from "../../package.json";
 
 const { width: _SCREEN_WIDTH } = Dimensions.get("window");
 
-const SettingItemComponent = ({ 
+const SettingItemComponent = ({
   item,
   isDark,
   onValueChange,
   theme,
-}: { 
+}: {
   item: SettingsItem;
   isDark: boolean;
   onValueChange: (_value: string | boolean | number) => void;
@@ -255,7 +255,7 @@ const SupportCard = ({ isDark, theme }: { isDark: boolean; theme: any }) => {
 };
 
 export default function NewSettingsScreen() {
-  const theme = UseTheme();
+  const theme = useTheme();
   const isDark = theme.isDark;
   const { t: _t } = useI18n();
 

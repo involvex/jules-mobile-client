@@ -362,7 +362,7 @@ export const darkTheme: ThemeConfig = {
 };
 
 // Theme hook with enhanced functionality
-export function UseTheme(): {
+export function useTheme(): {
   theme: ThemeConfig;
   colors: ThemeColors;
   typography: ThemeTypography;
@@ -393,7 +393,7 @@ export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: keyof ThemeColors,
 ): string {
-  const { colors, isDark } = UseTheme();
+  const { colors, isDark } = useTheme();
 
   const color = props[isDark ? "dark" : "light"] || colors[colorName];
   return color;
@@ -484,7 +484,7 @@ export const accessibility = {
 
   // Font scaling
   getFontSize: (size: keyof ThemeTypography): string | number => {
-    const { typography } = UseTheme();
+    const { typography } = useTheme();
     return typography[size];
   },
 };

@@ -430,7 +430,7 @@ export class PresetManager {
 
       await this.save();
       return { imported, skipped };
-    } catch (error) {
+    } catch (_error) {
       throw new Error("Invalid preset data format");
     }
   }

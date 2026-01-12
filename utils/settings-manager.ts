@@ -289,10 +289,7 @@ export class SettingsManager {
       for (const rule of item.validation) {
         switch (rule.type) {
           case "required":
-            if (
-              rule.value &&
-              (!value || String(value).trim() === "")
-            ) {
+            if (rule.value && (!value || String(value).trim() === "")) {
               errors.push(rule.message);
             }
             break;

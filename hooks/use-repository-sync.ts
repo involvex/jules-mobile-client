@@ -43,6 +43,9 @@ export function useRepositorySync() {
         const parsed = JSON.parse(cachedData);
         return {
           ...parsed,
+          repositories: Array.isArray(parsed.repositories)
+            ? parsed.repositories
+            : [],
           lastUpdated: new Date(parsed.lastUpdated || Date.now()),
         };
       }
@@ -172,11 +175,18 @@ export function useRepositorySync() {
 
         // Fetch fresh data from GitHub
         const remoteRepos = await getUserRepos({ per_page: 100, page: 1 });
+
+        if (!Array.isArray(remoteRepos)) {
+          throw new Error(
+            "Invalid response from GitHub: repositories list is not an array",
+          );
+        }
+
         setSyncStatus(prev => ({ ...prev, progress: 50 }));
 
         // Resolve conflicts if cache exists
         let finalRepos: Repository[];
-        if (existingCache) {
+        if (existingCache && existingCache.repositories) {
           finalRepos = await resolveConflicts(
             existingCache.repositories,
             remoteRepos,

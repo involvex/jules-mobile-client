@@ -7,6 +7,7 @@
   "scripts": {
     "android": "expo run:android",
     "build:android": "eas build --platform android --local",
+    "clean": "cd android && ./gradlew.bat --stop && cd .. && bun pm cache rm && npm cache rm --force && rimraf dist .expo && bunx expo export && bunx expo run:android --variant debug --no-build-cache ",
     "debug:android": "expo run:android --variant debug",
     "expo:doctor": "bunx expo-doctor",
     "expo:export": "bunx expo export --dev -c -p android --output-dir dist",
@@ -22,8 +23,7 @@
     "prebuild": "bun run format && bun run lint:fix && bun run oxc:fix && bun run typecheck",
     "start": "expo start",
     "typecheck": "tsc --noEmit",
-    "web": "expo start --web",
-    "clean": "rimraf dist .expo "
+    "web": "expo start --web"
   },
   "dependencies": {
     "@expo/local-build-cache-provider": "^0.0.1-canary-20251205-756eb7a",
