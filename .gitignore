@@ -43,4 +43,4 @@ app-example
 /android
 credentials.json
 *.apk
-.old_components
+.old_components/explore.tsx
