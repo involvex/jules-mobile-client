@@ -189,9 +189,7 @@ export function EnhancedRepositoryManager({
           [repo.id]: { topics, languages },
         }));
       } catch (error) {
-        console.error(
-          `Failed to load details for ${repo.full_name}:", error);`,
-        );
+        console.error(`Failed to load details for ${repo.full_name}:`, error);
       } finally {
         setLoadingDetails(prev => ({ ...prev, [repo.id]: false }));
       }
@@ -292,6 +290,7 @@ export function EnhancedRepositoryManager({
             style={[styles.repositoryItem, isDark && styles.repositoryItemDark]}
             onPress={() => onRepositorySelect?.(item)}
             onLongPress={() => handleHealthCheck(item)}
+            activeOpacity={0.8}
           >
             <View style={styles.repositoryHeader}>
               <View style={styles.repositoryInfo}>
@@ -315,6 +314,7 @@ export function EnhancedRepositoryManager({
               <TouchableOpacity
                 style={styles.expandButton}
                 onPress={() => toggleRepoExpansion(item.id)}
+                activeOpacity={0.6}
               >
                 <IconSymbol
                   name={isExpanded ? "chevron.up" : "chevron.down"}

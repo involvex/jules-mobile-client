@@ -8,12 +8,12 @@ import {
 } from "react-native";
 import { SessionCard, SessionCardSkeleton } from "@/components/jules";
 import React, { memo, useCallback, useEffect, useState } from "react";
+import { useI18n, I18nProvider } from "@/constants/i18n-context";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useApiKey } from "@/constants/api-key-context";
 import { useJulesApi } from "@/hooks/use-jules-api";
-import { useI18n } from "@/constants/i18n-context";
 import type { Session } from "@/constants/types";
 import { router } from "expo-router";
 
@@ -70,137 +70,141 @@ export default function SessionsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={["top"]}
-    >
-      {/* ヘッダー */}
-      <View style={[styles.header, isDark && styles.headerDark]}>
-        <View style={styles.headerLeft}>
-          <View style={styles.logoContainer}>
-            <IconSymbol name="terminal" size={20} color="#ffffff" />
+    <I18nProvider>
+      <SafeAreaView
+        style={[styles.container, isDark && styles.containerDark]}
+        edges={["top"]}
+      >
+        {/* ヘッダー */}
+        <View style={[styles.header, isDark && styles.headerDark]}>
+          <View style={styles.headerLeft}>
+            <View style={styles.logoContainer}>
+              <IconSymbol name="terminal" size={20} color="#ffffff" />
+            </View>
+            <Text
+              style={[styles.headerTitle, isDark && styles.headerTitleDark]}
+            >
+              Jules Client
+            </Text>
           </View>
-          <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
-            Jules Client
-          </Text>
-        </View>
-        <TouchableOpacity onPress={onRefresh} disabled={isLoading}>
-          <IconSymbol
-            name="arrow.clockwise"
-            size={20}
-            color={isDark ? "#94a3b8" : "#64748b"}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* エラー表示 */}
-      {error && (
-        <View style={[styles.errorBanner, isDark && styles.errorBannerDark]}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={clearError}>
-            <Text style={styles.errorClose}>×</Text>
+          <TouchableOpacity onPress={onRefresh} disabled={isLoading}>
+            <IconSymbol
+              name="arrow.clockwise"
+              size={20}
+              color={isDark ? "#94a3b8" : "#64748b"}
+            />
           </TouchableOpacity>
         </View>
-      )}
 
-      {/* セッション一覧 */}
-      {isLoading && sessions.length === 0 ? (
-        <View style={styles.listContent}>
-          <SessionCardSkeleton />
-          <View style={{ height: 12 }} />
-          <SessionCardSkeleton />
-          <View style={{ height: 12 }} />
-          <SessionCardSkeleton />
-          <View style={{ height: 12 }} />
-          <SessionCardSkeleton />
-        </View>
-      ) : (
-        <FlatList
-          data={sessions}
-          keyExtractor={item => item.name}
-          renderItem={({ item }) => (
-            <MemoizedSessionCard
-              session={item}
-              onPress={() => openSession(item)}
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={isDark ? "#60a5fa" : "#2563eb"}
-            />
-          }
-          removeClippedSubviews={true}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          getItemLayout={(_, index) => ({
-            length: 100,
-            offset: 112 * index,
-            index,
-          })}
-          ListEmptyComponent={
-            !apiKey ? (
-              <View style={styles.emptyContainer}>
-                <IconSymbol
-                  name="key"
-                  size={48}
-                  color={isDark ? "#475569" : "#94a3b8"}
-                />
-                <Text
-                  style={[styles.emptyText, isDark && styles.emptyTextDark]}
-                >
-                  {t("noApiKey")}
-                </Text>
-                <Text
-                  style={[
-                    styles.emptySubtext,
-                    isDark && styles.emptySubtextDark,
-                  ]}
-                >
-                  {t("noApiKeyHint")}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.emptyContainer}>
-                <IconSymbol
-                  name="terminal"
-                  size={48}
-                  color={isDark ? "#475569" : "#94a3b8"}
-                />
-                <Text
-                  style={[styles.emptyText, isDark && styles.emptyTextDark]}
-                >
-                  {t("noSessions")}
-                </Text>
-                <Text
-                  style={[
-                    styles.emptySubtext,
-                    isDark && styles.emptySubtextDark,
-                  ]}
-                >
-                  {t("noSessionsHint")}
-                </Text>
-              </View>
-            )
-          }
-        />
-      )}
+        {/* エラー表示 */}
+        {error && (
+          <View style={[styles.errorBanner, isDark && styles.errorBannerDark]}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={clearError}>
+              <Text style={styles.errorClose}>×</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-      {/* FAB (新規作成ボタン) */}
-      {apiKey && (
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={openCreateSession}
-          activeOpacity={0.8}
-        >
-          <IconSymbol name="plus" size={28} color="#ffffff" />
-        </TouchableOpacity>
-      )}
-    </SafeAreaView>
+        {/* セッション一覧 */}
+        {isLoading && sessions.length === 0 ? (
+          <View style={styles.listContent}>
+            <SessionCardSkeleton />
+            <View style={{ height: 12 }} />
+            <SessionCardSkeleton />
+            <View style={{ height: 12 }} />
+            <SessionCardSkeleton />
+            <View style={{ height: 12 }} />
+            <SessionCardSkeleton />
+          </View>
+        ) : (
+          <FlatList
+            data={sessions}
+            keyExtractor={item => item.name}
+            renderItem={({ item }) => (
+              <MemoizedSessionCard
+                session={item}
+                onPress={() => openSession(item)}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={isDark ? "#60a5fa" : "#2563eb"}
+              />
+            }
+            removeClippedSubviews={true}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            getItemLayout={(_, index) => ({
+              length: 100,
+              offset: 112 * index,
+              index,
+            })}
+            ListEmptyComponent={
+              !apiKey ? (
+                <View style={styles.emptyContainer}>
+                  <IconSymbol
+                    name="key"
+                    size={48}
+                    color={isDark ? "#475569" : "#94a3b8"}
+                  />
+                  <Text
+                    style={[styles.emptyText, isDark && styles.emptyTextDark]}
+                  >
+                    {t("noApiKey")}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.emptySubtext,
+                      isDark && styles.emptySubtextDark,
+                    ]}
+                  >
+                    {t("noApiKeyHint")}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <IconSymbol
+                    name="terminal"
+                    size={48}
+                    color={isDark ? "#475569" : "#94a3b8"}
+                  />
+                  <Text
+                    style={[styles.emptyText, isDark && styles.emptyTextDark]}
+                  >
+                    {t("noSessions")}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.emptySubtext,
+                      isDark && styles.emptySubtextDark,
+                    ]}
+                  >
+                    {t("noSessionsHint")}
+                  </Text>
+                </View>
+              )
+            }
+          />
+        )}
+
+        {/* FAB (新規作成ボタン) */}
+        {apiKey && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={openCreateSession}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="plus" size={28} color="#ffffff" />
+          </TouchableOpacity>
+        )}
+      </SafeAreaView>
+    </I18nProvider>
   );
 }
 

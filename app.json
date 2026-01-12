@@ -2,26 +2,28 @@
   "expo": {
     "name": "jules-mobile-client",
     "slug": "jules-mobile-client",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "julesmobileclcient",
+    "icon": "assets/images/icon.png",
+    "scheme": "julesmobileclient",
     "userInterfaceStyle": "automatic",
+    "jsEngine": "hermes",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.involvex.julesmobileclient"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "assets/images/android-icon-foreground.png",
+        "backgroundImage": "assets/images/android-icon-background.png",
+        "monochromeImage": "assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
-      "package": "com.potetotown.julesmobileclcient"
+      "package": "com.involvex.julesmobileclient"
     },
     "web": {
       "output": "static",
@@ -41,7 +43,9 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -49,10 +53,16 @@
     },
     "extra": {
       "eas": {
-        "projectId": "58bfc907-6bf9-49cc-8014-b7b019c80a6b"
+        "projectId": "2292061c-4c14-4b12-9c30-42f4a15b09b0"
       },
       "router": {}
     },
-    "owner": "involvex"
+    "owner": "involvex",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2292061c-4c14-4b12-9c30-42f4a15b09b0"
+    }
   }
 }

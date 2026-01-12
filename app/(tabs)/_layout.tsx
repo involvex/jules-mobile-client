@@ -12,10 +12,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor:
-          Colors[
-            colorScheme === "unspecified" ? "light" : (colorScheme ?? "light")
-          ].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
       }}
@@ -45,12 +42,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="gearshape.fill" color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          href: null,
         }}
       />
     </Tabs>

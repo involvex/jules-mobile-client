@@ -1,14 +1,13 @@
-import { useGithub } from "@/constants/github-context";
-import { Repository } from "./use-github-api";
+import { useGitHubService } from "./use-github-service";
+import { Repository } from "../services/github";
 import { useJulesApi } from "./use-jules-api";
 import { useCallback, useState } from "react";
-
 export interface GithubSessionContext {
   owner: string;
   repo: string;
   branch?: string;
   defaultBranch?: string;
-  repository?: Repository;
+  repository?: Repository | undefined;
 }
 
 export interface SessionCreationOptions {
@@ -32,13 +31,45 @@ export interface SessionTemplate {
 }
 
 export function useGithubSession() {
-  const { api: githubApi } = useGithub();
+  const { getRepo } = useGitHubService();
   const { createSession, fetchSources } = useJulesApi({
     apiKey: "",
     t: key => key,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Parse GitHub URL
+  const parseGithubUrl = useCallback(
+    (url: string): { owner: string; repo: string; branch?: string } | null => {
+      try {
+        const urlObj = new URL(url);
+        if (!urlObj.hostname.includes("github.com")) {
+          return null;
+        }
+
+        const pathParts = urlObj.pathname.split("/").filter(Boolean);
+        if (pathParts.length >= 2) {
+          const result: { owner: string; repo: string; branch?: string } = {
+            owner: pathParts[0],
+            repo: pathParts[1],
+          };
+
+          // Check for branch in URL (e.g., /owner/repo/tree/branch)
+          if (pathParts.length >= 4 && pathParts[2] === "tree") {
+            result.branch = pathParts[3];
+          }
+
+          return result;
+        }
+        return null;
+      } catch (error) {
+        console.error("Invalid GitHub URL:", error);
+        return null;
+      }
+    },
+    [],
+  );
 
   // Repository-specific prompt templates
   const sessionTemplates: SessionTemplate[] = [
@@ -92,16 +123,18 @@ export function useGithubSession() {
     async (
       owner: string,
       repo: string,
+      branch?: string,
     ): Promise<GithubSessionContext | null> => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const repository = await githubApi.getRepoDetails(owner, repo);
+        const repository = await getRepo(owner, repo);
 
         return {
           owner,
           repo,
+          branch,
           defaultBranch: repository.default_branch || "main",
           repository,
         };
@@ -116,7 +149,7 @@ export function useGithubSession() {
         setIsLoading(false);
       }
     },
-    [githubApi],
+    [getRepo],
   );
 
   // Create session with GitHub context
@@ -186,13 +219,17 @@ export function useGithubSession() {
         setError(null);
 
         // Parse the GitHub URL
-        const urlData = githubApi.parseGithubUrl(githubUrl);
+        const urlData = parseGithubUrl(githubUrl);
         if (!urlData) {
           throw new Error("Invalid GitHub URL");
         }
 
         // Get repository context
-        const context = await getRepositoryContext(urlData.owner, urlData.repo);
+        const context = await getRepositoryContext(
+          urlData.owner,
+          urlData.repo,
+          urlData.branch,
+        );
         if (!context) {
           throw new Error("Failed to get repository context");
         }
@@ -218,23 +255,29 @@ export function useGithubSession() {
         setIsLoading(false);
       }
     },
-    [githubApi, getRepositoryContext, createGithubSession],
+    [parseGithubUrl, getRepositoryContext, createGithubSession],
   );
 
   // Get available session templates
-  const getTemplates = useCallback((category?: SessionTemplate["category"]) => {
-    if (category) {
-      return sessionTemplates.filter(
-        template => template.category === category,
-      );
-    }
-    return sessionTemplates;
-  }, []);
+  const getTemplates = useCallback(
+    (category?: SessionTemplate["category"]) => {
+      if (category) {
+        return sessionTemplates.filter(
+          template => template.category === category,
+        );
+      }
+      return sessionTemplates;
+    },
+    [sessionTemplates],
+  );
 
   // Get template by ID
-  const getTemplate = useCallback((id: string) => {
-    return sessionTemplates.find(template => template.id === id);
-  }, []);
+  const getTemplate = useCallback(
+    (id: string) => {
+      return sessionTemplates.find(template => template.id === id);
+    },
+    [sessionTemplates],
+  );
 
   // Clear error
   const clearError = useCallback(() => {

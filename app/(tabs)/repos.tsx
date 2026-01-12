@@ -4,37 +4,35 @@ import React, { useCallback, useEffect } from "react";
 import { Stack } from "expo-router";
 
 import { EnhancedRepositoryManager } from "@/components/github/enhanced-repository-manager";
-import { Repository, useGithubApi } from "@/hooks/use-github-api";
+import { useGitHubService } from "@/hooks/use-github-service";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useI18n } from "@/constants/i18n-context";
+import { Repository } from "@/services/github";
 
 export default function Repos() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { t } = useI18n();
-  const { isAuthenticated, validateToken } = useGithubApi();
+  const { isAuthenticated, validateToken, lastError } = useGitHubService();
 
-  const handleRepoPress = useCallback(
-    (repo: Repository) => {
-      // TODO: Navigate to repository detail or session creation
-      Alert.alert(
-        repo.name,
-        `${repo.description || "No description available"}\n\n${repo.html_url}`,
-        [
-          { text: t("cancel"), style: "cancel" },
-          {
-            text: t("startSession"),
-            onPress: () => {
-              // TODO: Implement session creation with repository context
-              console.log("Starting session for:", repo.full_name);
-            },
+  const handleRepoPress = useCallback((repo: Repository) => {
+    // TODO: Navigate to repository detail or session creation
+    Alert.alert(
+      repo.name,
+      `${repo.description || "No description available"}\n\n${repo.html_url}`,
+      [
+        { text: "cancel", style: "cancel" },
+        {
+          text: "startSession",
+          onPress: () => {
+            // TODO: Implement session creation with repository context
+            console.log("Starting session for:", repo.full_name);
           },
-        ],
-      );
-    },
-    [t],
-  );
+        },
+      ],
+    );
+  }, []);
 
   // Initialize validation on mount only once
   useEffect(() => {
@@ -49,7 +47,7 @@ export default function Repos() {
   if (!isAuthenticated) {
     return (
       <>
-        <Stack.Screen options={{ title: t("repos") }} />
+        <Stack.Screen options={{ title: "repos" }} />
         <SafeAreaView
           style={[styles.container, isDark && styles.containerDark]}
           edges={["top"]}
@@ -87,7 +85,7 @@ export default function Repos() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t("repos") }} />
+      <Stack.Screen options={{ title: "repos" }} />
       <SafeAreaView
         style={[styles.container, isDark && styles.containerDark]}
         edges={["top"]}
@@ -101,7 +99,7 @@ export default function Repos() {
             <Text
               style={[styles.headerTitle, isDark && styles.headerTitleDark]}
             >
-              {t("sessions")}
+              {t("repos")}
             </Text>
           </View>
         </View>
