@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useCallback, useEffect, useRef } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useFocusEffect } from "expo-router";
 
 import { EnhancedRepositoryManager } from "@/components/github/enhanced-repository-manager";
 import { useGitHubService } from "@/hooks/use-github-service";
@@ -85,6 +85,12 @@ export default function Repos() {
     init();
   }, []); // Empty dependency array - only run once on mount
 
+  useFocusEffect(
+    useCallback(() => {
+      validateToken();
+    }, [validateToken]),
+  );
+
   if (!isAuthenticated) {
     return (
       <>
@@ -104,6 +110,19 @@ export default function Repos() {
                 {t("repos")}
               </Text>
             </View>
+            <TouchableOpacity
+              onPress={() => validateToken()}
+              disabled={isLoading}
+              style={styles.refreshButton}
+            >
+              <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                <IconSymbol
+                  name="arrow.clockwise"
+                  size={20}
+                  color={isDark ? "#94a3b8" : "#64748b"}
+                />
+              </Animated.View>
+            </TouchableOpacity>
           </View>
 
           <View style={[styles.emptyContainer, styles.centerContainer]}>

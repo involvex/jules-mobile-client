@@ -99,21 +99,16 @@ export function useGitHubService(): UseGitHubServiceReturn {
 
   // Initialize service when token changes
   useEffect(() => {
-    let isMounted = true;
-    if (GITHUB_TOKEN) {
-      githubService.initialize(GITHUB_TOKEN);
-      // Use the raw service method here to avoid the handleRequest/isLoading cycle
-      githubService.validateToken().then(valid => {
-        if (isMounted) {
-          setIsTokenValid(valid);
-        }
-      });
-    } else {
-      setIsTokenValid(false);
-    }
-    return () => {
-      isMounted = false;
+    const validate = async () => {
+      if (GITHUB_TOKEN) {
+        githubService.initialize(GITHUB_TOKEN);
+        const isValid = await githubService.validateToken();
+        setIsTokenValid(isValid);
+      } else {
+        setIsTokenValid(false);
+      }
     };
+    validate();
   }, [GITHUB_TOKEN]);
 
   // API method wrappers with error handling
