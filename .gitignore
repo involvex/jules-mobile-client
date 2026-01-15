@@ -38,11 +38,50 @@ yarn-error.*
 
 app-example
 
-# generated native folders
-/ios
-/android
+# generated native folders (Keep them tracked if you are using native code)
+# /ios
+# /android
 credentials.json
 *.apk
-.old_components/explore.tsx
-.kilocode
+
+# Expo build cache
+.expo/build-cache/
+
+# Dist folder
+dist/
+
+# Android build artifacts
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/GeneratedPluginRegistrant.java
+android/.kotlin/
+android/app/.cxx/
+android/app/.externalNativeBuild/
+
+# iOS build artifacts
+ios/build/
+ios/Pods/
+ios/.xcode.env.local
+ios/*.xcworkspace/
+ios/*/GeneratedPluginRegistrant.*
+
+# Native libraries and intermediate build files
+*.so
+*.a
+*.o
+*.pyc
+
+# C++ build artifacts
+android/app/build/intermediates/cxx/
+android/app/build/intermediates/merged_native_libs/
+android/app/build/intermediates/stripped_native_libs/
+
+# Kotlin build artifacts
+android/app/build/kotlin/
+android/app/build/tmp/kotlin-classes/
+
+# Other
 .old_components/
+.kilocode

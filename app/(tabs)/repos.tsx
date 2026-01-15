@@ -83,7 +83,7 @@ export default function Repos() {
       }
     };
     init();
-  }, []); // Empty dependency array - only run once on mount
+  }, [isAuthenticated, validateToken]); // Add missing dependencies
 
   useFocusEffect(
     useCallback(() => {
