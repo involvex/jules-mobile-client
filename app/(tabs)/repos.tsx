@@ -23,8 +23,14 @@ export default function Repos() {
   const isDark = colorScheme === "dark";
   const { t } = useI18n();
   const router = useRouter();
-  const { isAuthenticated, validateToken, refreshRepos, isLoading } =
-    useGitHubService();
+  const {
+    isAuthenticated,
+    validateToken,
+    refreshRepos,
+    isLoading,
+    user,
+    lastError,
+  } = useGitHubService();
 
   const spinValue = useRef(new Animated.Value(0)).current;
 
@@ -92,6 +98,8 @@ export default function Repos() {
   );
 
   if (!isAuthenticated) {
+    const isInvalid = lastError?.status === 401 || lastError?.type === "auth";
+
     return (
       <>
         <Stack.Screen options={{ title: "repos" }} />
@@ -127,16 +135,25 @@ export default function Repos() {
 
           <View style={[styles.emptyContainer, styles.centerContainer]}>
             <IconSymbol
-              name="exclamationmark.triangle.fill"
+              name={isInvalid ? "lock.fill" : "exclamationmark.triangle.fill"}
               size={48}
-              color="#f59e0b"
+              color={isInvalid ? "#ef4444" : "#f59e0b"}
             />
             <Text style={[styles.emptyTitle, isDark && styles.emptyTitleDark]}>
-              {t("noApiKey")}
+              {isInvalid ? t("invalidApiKey") : t("noApiKey")}
             </Text>
             <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
-              {t("noApiKeyHint")}
+              {isInvalid ? t("invalidApiKeyHint") : t("noApiKeyHint")}
             </Text>
+
+            {isInvalid && (
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={() => router.push("/(tabs)/settings")}
+              >
+                <Text style={styles.settingsButtonText}>{t("settings")}</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </SafeAreaView>
       </>
@@ -156,11 +173,20 @@ export default function Repos() {
             <View style={styles.logoContainer}>
               <IconSymbol name="paperplane.fill" size={20} color="#ffffff" />
             </View>
-            <Text
-              style={[styles.headerTitle, isDark && styles.headerTitleDark]}
-            >
-              {t("repos")}
-            </Text>
+            <View>
+              <Text
+                style={[styles.headerTitle, isDark && styles.headerTitleDark]}
+              >
+                {t("repos")}
+              </Text>
+              {user && (
+                <View style={styles.userContainer}>
+                  <Text style={[styles.userLogin, isDark && styles.userLoginDark]}>
+                    {user.login}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
           <TouchableOpacity
             onPress={refreshRepos}
@@ -250,5 +276,30 @@ const styles = StyleSheet.create({
   },
   emptyTextDark: {
     color: "#94a3b8",
+  },
+  userContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: -2,
+  },
+  userLogin: {
+    fontSize: 12,
+    color: "#64748b",
+    fontWeight: "500",
+  },
+  userLoginDark: {
+    color: "#94a3b8",
+  },
+  settingsButton: {
+    marginTop: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: "#2563eb",
+    borderRadius: 8,
+  },
+  settingsButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

@@ -27,6 +27,18 @@ export interface Repository {
   };
 }
 
+export interface GitHubUser {
+  login: string;
+  id: number;
+  avatar_url: string;
+  name: string | null;
+  email: string | null;
+  bio: string | null;
+  public_repos: number;
+  followers: number;
+  following: number;
+}
+
 export interface SearchResults {
   total_count: number;
   items: Repository[];
@@ -152,16 +164,34 @@ export class GitHubService {
 
   /**
    * Validate token by making a test request
+   * @throws {GitHubError} If token is invalid
    */
   async validateToken(): Promise<boolean> {
     if (!this.octokit) return false;
 
-    try {
-      await this.request("GET /user", {});
-      return true;
-    } catch (error) {
-      return false;
+    await this.request("GET /user", {});
+    return true;
+  }
+
+  /**
+   * Get authenticated user information
+   */
+  async getCurrentUser(): Promise<GitHubUser> {
+    const cacheKey = "current-user";
+
+    // Check cache first
+    const cached = await enhancedCache.get<GitHubUser>(cacheKey);
+    if (cached) {
+      return cached;
     }
+
+    const response = await this.request("GET /user", {});
+    const user = response.data as GitHubUser;
+
+    // Cache for 1 hour
+    await enhancedCache.set(cacheKey, user, { ttl: 3600000 });
+
+    return user;
   }
 
   /**

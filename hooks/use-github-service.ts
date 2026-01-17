@@ -8,6 +8,7 @@ import {
   GitHubError,
   RequestMetrics,
   RateLimitInfo,
+  GitHubUser,
 } from "../services/github";
 
 import { useCallback, useEffect, useState } from "react";
@@ -21,6 +22,7 @@ export type {
   GitHubError,
   RequestMetrics,
   RateLimitInfo,
+  GitHubUser,
 };
 
 export interface UseGitHubServiceReturn {
@@ -57,6 +59,9 @@ export interface UseGitHubServiceReturn {
 
   // Error handling
   lastError: GitHubError | null;
+
+  // User data
+  user: GitHubUser | null;
 }
 
 /**
@@ -67,6 +72,7 @@ export function useGitHubService(): UseGitHubServiceReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [lastError, setLastError] = useState<GitHubError | null>(null);
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
+  const [user, setUser] = useState<GitHubUser | null>(null);
 
   // Error handling wrapper - Move to top to avoid hoisting issues
   const handleRequest = useCallback(
@@ -92,20 +98,44 @@ export function useGitHubService(): UseGitHubServiceReturn {
     [],
   );
 
-  const validateToken = useCallback(
-    () => handleRequest(() => githubService.validateToken()),
-    [handleRequest],
-  );
+  const validateToken = useCallback(async () => {
+    try {
+      const isValid = await handleRequest(() => githubService.validateToken());
+      if (isValid) {
+        const userData = await githubService.getCurrentUser();
+        setUser(userData);
+        setIsTokenValid(true);
+      }
+      return isValid;
+    } catch (error) {
+      setIsTokenValid(false);
+      setUser(null);
+      return false;
+    }
+  }, [handleRequest]);
 
   // Initialize service when token changes
   useEffect(() => {
     const validate = async () => {
       if (GITHUB_TOKEN) {
         githubService.initialize(GITHUB_TOKEN);
-        const isValid = await githubService.validateToken();
-        setIsTokenValid(isValid);
+        try {
+          const isValid = await githubService.validateToken();
+          if (isValid) {
+            setIsTokenValid(true);
+            const userData = await githubService.getCurrentUser();
+            setUser(userData);
+          } else {
+            setIsTokenValid(false);
+            setUser(null);
+          }
+        } catch (error) {
+          setIsTokenValid(false);
+          setUser(null);
+        }
       } else {
         setIsTokenValid(false);
+        setUser(null);
       }
     };
     validate();
@@ -187,5 +217,6 @@ export function useGitHubService(): UseGitHubServiceReturn {
     refreshRepos,
     clearCache,
     lastError,
+    user,
   };
 }

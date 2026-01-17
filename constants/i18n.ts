@@ -21,6 +21,8 @@ const translations = {
     noSessionsHint: "右下のボタンから新しいタスクを作ろう！",
     noApiKey: "APIキーが設定されていないよ",
     noApiKeyHint: "Settingsタブでキーを入力してね！",
+    invalidApiKey: "APIキーが無効だよ",
+    invalidApiKeyHint: "正しいGitHubトークンを設定してね。",
 
     // Session Detail
     noActivities: "アクティビティがないよ",
@@ -169,6 +171,8 @@ const translations = {
     noSessionsHint: "Tap the button below to create a new task!",
     noApiKey: "API key not set",
     noApiKeyHint: "Enter your key in Settings tab!",
+    invalidApiKey: "Invalid API Key",
+    invalidApiKeyHint: "Please check your GitHub token in Settings.",
     createGithubSession: "Create GitHub Session",
 
     // Session Detail
