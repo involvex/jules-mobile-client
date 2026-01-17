@@ -7,9 +7,9 @@ import {
   Animated,
   Easing,
 } from "react-native";
+import { Stack, useRouter, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useCallback, useEffect, useRef } from "react";
-import { Stack, useRouter, useFocusEffect } from "expo-router";
 
 import { EnhancedRepositoryManager } from "@/components/github/enhanced-repository-manager";
 import { useGitHubService } from "@/hooks/use-github-service";
@@ -181,7 +181,9 @@ export default function Repos() {
               </Text>
               {user && (
                 <View style={styles.userContainer}>
-                  <Text style={[styles.userLogin, isDark && styles.userLoginDark]}>
+                  <Text
+                    style={[styles.userLogin, isDark && styles.userLoginDark]}
+                  >
                     {user.login}
                   </Text>
                 </View>

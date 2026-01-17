@@ -2,7 +2,7 @@
   "expo": {
     "name": "jules-mobile-client",
     "slug": "jules-mobile-client",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "assets/images/icon.png",
     "scheme": "julesmobileclient",
@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.involvex.julesmobileclient",
-      "buildNumber": "106"
+      "buildNumber": "107"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +33,7 @@
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
       "package": "com.involvex.julesmobileclient",
-      "versionCode": 106
+      "versionCode": 107
     },
     "web": {
       "output": "static",
@@ -68,7 +68,7 @@
       "router": {}
     },
     "owner": "involvex",
-    "runtimeVersion": "1.0.0", 
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/2292061c-4c14-4b12-9c30-42f4a15b09b0"
     }
